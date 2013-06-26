@@ -7,11 +7,20 @@
 // #define I2C_FASTMODE 1
 // #define I2C_SLOWMODE 1
 // #define I2C_NOINTERRUPT 1
+// #define I2C_TIMEOUT 100
+#define I2C_CPUFREQ (F_CPU/8)
 #include <SoftI2C.h>
 
 #define EEPROMADDR 0xA6 // set by jumper
 #define MAXADDR 0x1FFFF
 #define MAXTESTADDR 0x03FFF
+
+void CPUSlowDown(void) {
+  // slow down processor by a factor of 8
+  CLKPR = _BV(CLKPCE);
+  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
+}
+  
 
 //------------------------------------------------------------------------------
 /*
@@ -39,7 +48,7 @@ boolean readEEPROM(unsigned long address, uint8_t *byte) {
  */
 boolean readBurstEEPROM(unsigned long start, unsigned long stop) {
   // does not handle the transition from 0x0FFFF to 0x10000
-  // since we only use it for performance evalaution, we do not care!
+  // since we only use it for performance evaluation, we do not care!
   unsigned long addr = start;
   uint8_t byte;
   // issue a start condition, send device address and write direction bit
@@ -213,6 +222,10 @@ void help (void) {
 
 
 void setup(void) {
+#if I2C_CPUFREQ == (F_CPU/8)
+  CPUSlowDown();
+#endif
+
   Serial.begin(19200);
   Serial.println(F("\n\nTest program for EEPROM 24AA1024"));
   help();

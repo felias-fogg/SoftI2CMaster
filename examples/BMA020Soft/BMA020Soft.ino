@@ -4,6 +4,8 @@
 
 // use low processor speed (you have to change the baud rate!) 
 #define I2C_CPUFREQ (F_CPU/8)
+#define NO_INTERRUPT 1
+#define I2C_TIMEOUT 1000
 
 #define SDA_PORT PORTD
 #define SDA_PIN 3

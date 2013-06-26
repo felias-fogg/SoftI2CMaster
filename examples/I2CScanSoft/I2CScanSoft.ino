@@ -4,7 +4,10 @@
 #define SDA_PIN 3
 #define SCL_PORT PORTD
 #define SCL_PIN 5
-// #define I2C_FASTMODE 1
+#define I2C_TIMEOUT 100
+#define I2C_NOINTERRUPT 1
+// #define I2C_SLOWMODE 1
+#define I2C_CPUFREQ (F_CPU/8)
 
 
 /* Corresponds to A4/A5 - the hardware I2C pins on Arduinos
@@ -16,28 +19,51 @@
 */
 
 #include <SoftI2C.h>
-
+#include <avr/io.h>
 
 //------------------------------------------------------------------------------
-void setup(void) {
+void CPUSlowDown(void) {
+  // slow down processor by a factor of 8
+  CLKPR = _BV(CLKPCE);
+  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
+}
+  
 
-  Serial.begin(19200);
+
+void setup(void) {
+#if I2C_CPUFREQ != F_CPU
+  CPUSlowDown();
+#endif
+
+  Serial.begin(19200); // change baudrate to 2400 on terminal when low CPU freq!
+  delay(500);
+  Serial.println(F("Intializing ..."));
   Serial.print("I2C delay counter: ");
   Serial.println(I2C_DELAY_COUNTER);
-  Serial.println("Scanning ...");
-  i2c_init();
-  
+  delay(500);
+  if (!i2c_init()) 
+    Serial.println(F("Initialization error. SDA or SCL are low"));
+  else
+    Serial.println(F("...done"));
+  delay(500);
+}
+
+void loop(void)
+{
   uint8_t add = 0;
+  int found = false;
+  Serial.println("Scanning ...");
 
   Serial.println("       8-bit 7-bit addr");
   // try read
   do {
     if (i2c_start(add | I2C_READ)) {
+      found = true;
       i2c_read(true);
       i2c_stop();
       Serial.print("Read:   0x");
       if (add < 0x0F) Serial.print(0, HEX);
-      Serial.print(add, HEX);
+      Serial.print(add+I2C_READ, HEX);
       Serial.print("  0x");
       if (add>>1 < 0x0F) Serial.print(0, HEX);
       Serial.println(add>>1, HEX);
@@ -49,10 +75,11 @@ void setup(void) {
   add = 0;
   do {
     if (i2c_start(add | I2C_WRITE)) {
+      found = true;
       i2c_stop();
       Serial.print("Write:  0x");    
       if (add < 0x0F) Serial.print(0, HEX);  
-      Serial.print(add, HEX);
+      Serial.print(add+I2C_WRITE, HEX);
       Serial.print("  0x");
       if (add>>1 < 0x0F) Serial.print(0, HEX);
       Serial.println(add>>1, HEX);
@@ -60,7 +87,7 @@ void setup(void) {
     i2c_stop();
     add += 2;
   } while (add);
-
-  Serial.println("Done");
+  if (!found) Serial.println(F("No I2C device found."));
+  Serial.println("Done\n\n");
+  delay(2000);
 }
-void loop(void){}
