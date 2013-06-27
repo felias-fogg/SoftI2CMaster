@@ -5,9 +5,9 @@
 #define SCL_PORT PORTD
 #define SCL_PIN 5
 #define I2C_TIMEOUT 100
-#define I2C_NOINTERRUPT 1
+#define I2C_NOINTERRUPT 0
 #define I2C_SLOWMODE 1
-#define FAC 8
+#define FAC 1
 #define I2C_CPUFREQ (F_CPU/FAC)
 
 
@@ -19,7 +19,7 @@
 #define I2C_FASTMODE 1
 */
 
-#include <SoftI2C.h>
+#include <SoftI2CMaster.h>
 #include <avr/io.h>
 
 //------------------------------------------------------------------------------

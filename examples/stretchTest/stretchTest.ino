@@ -10,7 +10,7 @@
 #define SCL_PORT PORTD
 #define SCL_PIN 5
 
-#define DELAY 8
+#define DELAY 8 // strech SCL low for that many milli seconds
 
 #define SCL_DDR       	(_SFR_IO_ADDR(SCL_PORT) - 1)
 #define SCL_OUT       	_SFR_IO_ADDR(SCL_PORT)

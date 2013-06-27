@@ -5,7 +5,7 @@
 #define SCL_PORT PORTD
 #define SCL_PIN 5
 
-#include <SoftI2C.h>
+#include <SoftI2CMaster.h>
 #include "TSL2561Soft.h"
 
 #define ADDR 0x72

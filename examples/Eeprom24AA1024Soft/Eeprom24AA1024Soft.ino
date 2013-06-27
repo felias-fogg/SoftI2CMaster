@@ -5,10 +5,10 @@
 #define SCL_PORT PORTD
 #define SCL_PIN 5
 #define I2C_FASTMODE 0
-// #define I2C_TIMEOUT 9 // timeout after 9 msec
+// #define I2C_TIMEOUT 10 // timeout after 10 msec
 // #define I1C_NOINTERRUPT 1 // no interrupts
 // #define I2C_CPUFREQ (F_CPU/8) // slow down CPU frequency
-#include <SoftI2C.h>
+#include <SoftI2CMaster.h>
 
 #define EEPROMADDR 0xA6 // set by jumper
 #define MAXADDR 0x1FFFF

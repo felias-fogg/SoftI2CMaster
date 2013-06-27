@@ -2,8 +2,8 @@
 
 // Readout BMA020 chip
 
-// use low processor speed (you have to change the baud rate!) 
-#define I2C_CPUFREQ (F_CPU/8)
+// use low processor speed (you have to change the baud rate to 2400!) 
+// #define I2C_CPUFREQ (F_CPU/8)
 #define NO_INTERRUPT 1
 #define I2C_TIMEOUT 1000
 
@@ -11,7 +11,7 @@
 #define SDA_PIN 3
 #define SCL_PORT PORTD
 #define SCL_PIN 5
-#include <SoftI2C.h>
+#include <SoftI2CMaster.h>
 #include <avr/io.h>
 
 

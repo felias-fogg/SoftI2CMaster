@@ -5,7 +5,7 @@
 #define SDA_PIN 3
 #define SCL_PORT PORTD
 #define SCL_PIN 5
-#include <SoftI2C.h>
+#include <SoftI2CMaster.h>
 
 
 
