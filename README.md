@@ -3,12 +3,13 @@ SoftI2CMaster
 
 Software I2C Arduino library
 
-This is a very fast and very light-weight software I2C-master library
-written in assembler. It is based on Peter Fleury's I2C software I2C
-library: http://homepage.hispeed.ch/peterfleury/avr-software.html
+This is a very fast and light-weight software I2C-master library
+written in assembler, which is based on Peter Fleury's I2C software
+I2C library http://homepage.hispeed.ch/peterfleury/avr-software.html
+. It can use any pins on any AVR chip to drive the SDA and SCL lines.
 
 It assumes a single master and does not support bus arbitration. It
-allows for clock stretching by slave devices and also supports
-timeouts for clock stretching between 1 and 10000 milli seconds.
+allows for clock stretching by slave devices and also can detect lock
+ups of the I2C bus, i.e., if the SCL line is held low indefinitely.
 
 Even on 1MHz systems, you can get a transfer speed of 40 kbit/sec.
