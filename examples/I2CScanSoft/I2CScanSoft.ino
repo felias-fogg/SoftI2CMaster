@@ -6,8 +6,9 @@
 #define SCL_PIN 5
 #define I2C_TIMEOUT 100
 #define I2C_NOINTERRUPT 1
-// #define I2C_SLOWMODE 1
-#define I2C_CPUFREQ (F_CPU/8)
+#define I2C_SLOWMODE 1
+#define FAC 8
+#define I2C_CPUFREQ (F_CPU/FAC)
 
 
 /* Corresponds to A4/A5 - the hardware I2C pins on Arduinos
@@ -22,30 +23,27 @@
 #include <avr/io.h>
 
 //------------------------------------------------------------------------------
-void CPUSlowDown(void) {
-  // slow down processor by a factor of 8
-  CLKPR = _BV(CLKPCE);
-  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
+void CPUSlowDown(int fac) {
+  // slow down processor by a fac
+    CLKPR = _BV(CLKPCE);
+    CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
 }
   
 
 
 void setup(void) {
-#if I2C_CPUFREQ != F_CPU
-  CPUSlowDown();
+#if FAC != 1
+  CPUSlowDown(FAC);
 #endif
 
   Serial.begin(19200); // change baudrate to 2400 on terminal when low CPU freq!
-  delay(500);
   Serial.println(F("Intializing ..."));
   Serial.print("I2C delay counter: ");
   Serial.println(I2C_DELAY_COUNTER);
-  delay(500);
   if (!i2c_init()) 
     Serial.println(F("Initialization error. SDA or SCL are low"));
   else
     Serial.println(F("...done"));
-  delay(500);
 }
 
 void loop(void)
@@ -89,5 +87,5 @@ void loop(void)
   } while (add);
   if (!found) Serial.println(F("No I2C device found."));
   Serial.println("Done\n\n");
-  delay(2000);
+  delay(1000/FAC);
 }

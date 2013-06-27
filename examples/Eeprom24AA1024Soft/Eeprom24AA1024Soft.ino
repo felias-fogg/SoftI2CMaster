@@ -4,10 +4,9 @@
 #define SDA_PIN 3
 #define SCL_PORT PORTD
 #define SCL_PIN 5
-// #define I2C_FASTMODE 1
-// #define I2C_SLOWMODE 1
-// #define I2C_NOINTERRUPT 1
-// #define I2C_TIMEOUT 100
+#define I2C_FASTMODE 0
+#define I2C_TIMEOUT 9
+#define I1C_NOINTERRUPT 1
 #define I2C_CPUFREQ (F_CPU/8)
 #include <SoftI2C.h>
 
