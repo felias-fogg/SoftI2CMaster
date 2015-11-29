@@ -9,10 +9,6 @@
 
 
 
-#define DEVICE (0x5A<<1)
-
-
-
 void setup(){
 #if (__AVR_ARCH__  == 5) // means ATMEGA 
 	Serial.begin(19200);

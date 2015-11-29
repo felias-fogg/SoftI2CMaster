@@ -4,7 +4,7 @@
 #define SDA_PIN 3
 #define SCL_PORT PORTD
 #define SCL_PIN 5
-#define I2C_FASTMODE 0
+#define I2C_FASTMODE 1
 // #define I2C_TIMEOUT 10 // timeout after 10 msec
 // #define I1C_NOINTERRUPT 1 // no interrupts
 // #define I2C_CPUFREQ (F_CPU/8) // slow down CPU frequency
@@ -12,7 +12,7 @@
 
 #define EEPROMADDR 0xA6 // set by jumper
 #define MAXADDR 0x1FFFF
-#define MAXTESTADDR 0x03FFF
+#define MAXTESTADDR 0x003FF
 
 void CPUSlowDown(void) {
   // slow down processor by a factor of 8
@@ -157,6 +157,16 @@ boolean performanceTest() {
   avgtime = (endmicros-startmicros)/(MAXTESTADDR+1);
   Serial.print(avgtime);
   Serial.println(F(" micro secs/byte"));
+
+  Serial.println(F("Random writes ..."));
+  startmicros = micros();
+  for (eeaddr = 0; eeaddr <= MAXTESTADDR; eeaddr++) 
+    OK &= writeEEPROM(eeaddr,0x55);
+  endmicros = micros();
+  Serial.print(F("Time: "));
+  avgtime = (endmicros-startmicros)/(MAXTESTADDR+1);
+  Serial.print(avgtime);
+  Serial.println(F(" micro secs/byte"));
   
   Serial.println(F("Page writes with wait ..."));
   startmicros = micros();
@@ -246,6 +256,7 @@ void loop(void) {
     noterror = readEEPROM(addr,&byte);
     Serial.print(addr,HEX);
     Serial.print(F(": "));
+    if (byte < 0x10) Serial.print("0");
     Serial.println(byte,HEX);
     if (!noterror) Serial.println(F("Error while reading"));
     break;
@@ -279,10 +290,12 @@ void loop(void) {
       noterror = readEEPROM(addr,&byte);
       Serial.print(addr,HEX);
       Serial.print(F(": "));
+      if (byte < 0x10) Serial.print("0");
       Serial.println(byte,HEX);
       if (!noterror) Serial.println(F("Error while reading"));
       addr++;
     }
+    break;
   case 'p': 
     noterror = performanceTest();
     if (!noterror) Serial.println(F("Error while executing performance test"));

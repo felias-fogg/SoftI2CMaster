@@ -50,4 +50,9 @@
 #define TSL2561_CLIPPING_101MS    (37000)
 #define TSL2561_CLIPPING_402MS    (65000)
 
+// Integration time
+#define  TSL2561_TIME_13MS  0x00    // 13.7ms
+#define  TSL2561_TIME_101MS 0x01    // 101ms
+#define  TSL2561_TIME_402MS 0x02     // 402ms
+
 #endif

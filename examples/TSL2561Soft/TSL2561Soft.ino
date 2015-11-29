@@ -1,9 +1,21 @@
 // Sketch to explore the luminosity sensor TSL2561 (breakout board by Adafruit)
 
-#define SDA_PORT PORTD
-#define SDA_PIN 3
-#define SCL_PORT PORTD
+#define INTTIME TSL2561_TIME_402MS
+#define GAIN false
+
+#ifdef __AVR_ATmega328P__
+#define SDA_PORT PORTC
+#define SDA_PIN 4
+#define SCL_PORT PORTC
 #define SCL_PIN 5
+#define I2C_FASTMODE 1
+#else
+#define SDA_PORT PORTB
+#define SDA_PIN 0
+#define SCL_PORT PORTB
+#define SCL_PIN 2
+#define I2C_FASTMODE 1
+#endif
 
 #include <SoftI2CMaster.h>
 #include "TSL2561Soft.h"
@@ -11,17 +23,39 @@
 #define ADDR 0x72
 
 //------------------------------------------------------------------------------
-unsigned long computeLux(unsigned long channel0, unsigned long channel1){
+unsigned long computeLux(boolean gain, int intTime , unsigned long channel0, unsigned long channel1){
   
-  /* Make sure the sensor isn't saturated! */
-  uint16_t clipThreshold = TSL2561_CLIPPING_402MS;;
+  uint16_t clipThreshold;
+  unsigned long chScale;
+  
+  switch (intTime) {
+  case TSL2561_TIME_13MS: 
+    clipThreshold = TSL2561_CLIPPING_13MS;
+    chScale =  TSL2561_LUX_CHSCALE_TINT0;
+    break;
+  case TSL2561_TIME_101MS: 
+    clipThreshold = TSL2561_CLIPPING_101MS;
+    chScale = TSL2561_LUX_CHSCALE_TINT1;
+    break;
+  case TSL2561_TIME_402MS: 
+    clipThreshold = TSL2561_CLIPPING_402MS;
+    chScale = (1 << TSL2561_LUX_CHSCALE);
+    break;
+  }
+  if (!gain) chScale = chScale << 4;
 
-  /* Return 0 lux if the sensor is saturated */
+  /* Return MAX lux if the sensor is saturated */
   if ((channel0 > clipThreshold) || (channel1 > clipThreshold))
   {
+#ifdef __AVR_ATmega328P__
     Serial.println(F("Sensor is saturated"));
+#endif
     return 32000;
   }
+
+  channel0 = (channel0 * chScale) >> TSL2561_LUX_CHSCALE;
+  channel1 = (channel1 * chScale) >> TSL2561_LUX_CHSCALE;
+  
 
   /* Find the ratio of the channel values (Channel1/Channel0) */
   unsigned long ratio1 = 0;
@@ -59,21 +93,48 @@ unsigned long computeLux(unsigned long channel0, unsigned long channel1){
   temp += (1 << (TSL2561_LUX_LUXSCALE-1));
 
   /* Strip off fractional portion */
-  uint32_t lux = temp >> TSL2561_LUX_LUXSCALE;
+  unsigned long lux = temp >> TSL2561_LUX_LUXSCALE;
 
   return lux;
 }
 
 void setup(void) {
 
+#ifdef __AVR_ATmega328P__
   Serial.begin(19200);
   Serial.println("Initializing ...");
+#endif
   i2c_init();
 
-  if (!i2c_start(ADDR | I2C_WRITE)) Serial.println(F("Device does not respond"));
-  if (!i2c_write(0x80)) Serial.println(F("Cannot address reg 0"));
-  if (!i2c_write(0x03)) Serial.println(F("Cannot wake up"));
+  if (!i2c_start(ADDR | I2C_WRITE)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Device does not respond"));
+#endif
+  }
+  if (!i2c_write(0x80)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot address reg 0"));
+#endif
+  }
+  if (!i2c_write(0x03)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot wake up")); // wake up
+#endif
+  }
   i2c_stop();
+  i2c_start(ADDR | I2C_WRITE);
+  if (!i2c_write(0x81)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot address reg 1"));
+#endif
+  }
+  if (!i2c_write((GAIN ? 0x10 : 0x00)+INTTIME)) {
+#ifdef __AVR_ATmega328P__
+      Serial.println(F("Cannot change gain & integration time")); 
+#endif
+  }
+  i2c_stop();
+  
 }  
 
 void loop (void) {
@@ -81,20 +142,57 @@ void loop (void) {
   unsigned int chan0, chan1;
   unsigned int lux;
 
-  delay(1000);
+  if (!i2c_start(ADDR | I2C_WRITE)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Device does not respond"));
+#endif
+  }
+  if (!i2c_write(0x80)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot address reg 0"));
+#endif
+  }
+  if (!i2c_write(0x03)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot wake up"));
+#endif
+  }
+  i2c_stop();
+  delay(600);
   i2c_start(ADDR | I2C_WRITE);
   i2c_write(0x8C);
   i2c_rep_start(ADDR | I2C_READ);
   low0 = i2c_read(false);
-  high0 = i2c_read(false);
+  high0 = i2c_read(true);
+  i2c_stop();
+  i2c_start(ADDR | I2C_WRITE);
+  i2c_write(0x8E);
+  i2c_rep_start(ADDR | I2C_READ);
   low1 = i2c_read(false);
   high1 = i2c_read(true);
   i2c_stop();
+  i2c_start(ADDR | I2C_WRITE);
+  if (!i2c_write(0x80)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot address reg 0"));
+#endif
+  }
+  if (!i2c_write(0x00)) {
+#ifdef __AVR_ATmega328P__
+    Serial.println(F("Cannot wake up"));
+#endif
+  }
+  i2c_stop();
+#ifdef __AVR_ATmega328P__
   Serial.print(F("Raw values: chan0="));
   Serial.print(chan0=(low0+(high0<<8)));
   Serial.print(F(" / chan1="));
   Serial.println(chan1=(low1+(high1<<8)));
-  lux = computeLux(chan0,chan1);
+  lux = computeLux(GAIN,INTTIME,chan0,chan1);
   Serial.print(F("Lux value="));
   Serial.println(lux);
+#else
+  while (1) ;
+#endif
+  delay(1000);
 }

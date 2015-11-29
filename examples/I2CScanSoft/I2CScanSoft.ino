@@ -1,9 +1,10 @@
+// -*-c++-*-
 // Scan I2C bus for device responses
 
-#define SDA_PORT PORTD
-#define SDA_PIN 3
-#define SCL_PORT PORTD
-#define SCL_PIN 5
+#define SDA_PORT PORTB
+#define SDA_PIN 2
+#define SCL_PORT PORTB
+#define SCL_PIN 3
 #define I2C_TIMEOUT 100
 #define I2C_NOINTERRUPT 0
 #define I2C_SLOWMODE 1
@@ -16,7 +17,7 @@
 #define SDA_PIN 4
 #define SCL_PORT PORTC
 #define SCL_PIN 5
-#define I2C_FASTMODE 1
+#define I2C_FASTMODE 0
 */
 
 #include <SoftI2CMaster.h>
