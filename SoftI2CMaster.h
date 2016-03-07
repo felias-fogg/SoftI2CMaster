@@ -1,9 +1,10 @@
 /* Arduino SoftI2C library. 
  *
+ * Copyright (C) 2013, Bernhard Nebel and Peter Fleury
+ *
  * This is a very fast and very light-weight software I2C-master library 
  * written in assembler. It is based on Peter Fleury's I2C software
  * library: http://homepage.hispeed.ch/peterfleury/avr-software.html
- *
  *
  * This Library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +47,9 @@
  */
 
 /* Changelog:
+ * Version 1.2:
+ * - added pragma to avoid "unused parameter warnings" (suggestion by Walter)
+ * - replaced wrong license file
  * Version 1.1: 
  * - removed I2C_CLOCK_STRETCHING
  * - added I2C_TIMEOUT time in msec (0..10000) until timeout or 0 if no timeout
@@ -58,6 +62,12 @@
 
 #ifndef _SOFTI2C_H
 #define _SOFTI2C_H   1
+
+#pragma GCC diagnostic push
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+
 
 // Init function. Needs to be called once in the beginning.
 // Returns false if SDA or SCL are low, which probably means 
@@ -86,7 +96,8 @@ void __attribute__ ((noinline)) i2c_stop(void) asm("ass_i2c_stop");
 // by the previous start call. <value> is the byte to be sent.
 // Return: true if the slave replies with an "acknowledge", false otherwise
 bool __attribute__ ((noinline)) i2c_write(uint8_t value) asm("ass_i2c_write");
- 
+
+
 // Read one byte. If <last> is true, we send a NAK after having received 
 // the byte in order to terminate the read sequence. 
 uint8_t __attribute__ ((noinline)) i2c_read(bool last);
@@ -503,6 +514,9 @@ uint8_t i2c_read(bool last)
      ); 
   return ' '; // fool the compiler!
 }
+
+
+#pragma GCC diagnostic pop
 
 #endif
 
