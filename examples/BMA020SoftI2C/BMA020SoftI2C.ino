@@ -3,32 +3,54 @@
 // Readout BMA020 chip
 
 // use low processor speed (you have to change the baud rate to 2400!) 
-// #define I2C_CPUFREQ (F_CPU/8)
-#define NO_INTERRUPT 1
-#define I2C_TIMEOUT 1000
+#define I2C_CPUFREQ (F_CPU/16)
+//#define NO_INTERRUPT 1
+//#define I2C_FASTMODE 1
+//#define I2C_SLOWMODE 1
+//#define I2C_TIMEOUT 1000
+#define TERMOUT 1
 
-#define SDA_PORT PORTD
-#define SDA_PIN 3
-#define SCL_PORT PORTD
+#define SDA_PORT PORTC
+#define SDA_PIN 4
+#define SCL_PORT PORTC
 #define SCL_PIN 5
 #include <SoftI2CMaster.h>
 #include <avr/io.h>
 
 
 #define BMAADDR 0x70
+#define LEDPIN 13
 
 int xval, yval, zval;
 
-void CPUSlowDown(void) {
-  // slow down processor by a factor of 8
-  CLKPR = _BV(CLKPCE);
-  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
+void CPUSlowDown(int fac) {
+  // slow down processor by a fac
+  switch(fac) {
+  case 2:
+    CLKPR = _BV(CLKPCE);
+    CLKPR = _BV(CLKPS0);
+    break;
+  case 4:
+    CLKPR = _BV(CLKPCE);
+    CLKPR = _BV(CLKPS1);
+    break;    
+  case 8:
+    CLKPR = _BV(CLKPCE);
+    CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
+    break;
+  case 16:
+    CLKPR = _BV(CLKPCE);
+    CLKPR = _BV(CLKPS2);
+    break;
+  }
 }
   
 
 boolean setControlBits(uint8_t cntr)
 {
+#ifdef TERMOUT
   Serial.println(F("Soft reset"));
+#endif
   if (!i2c_start(BMAADDR | I2C_WRITE)) {
     return false;
   }
@@ -76,18 +98,31 @@ boolean readBma(void)
 
 //------------------------------------------------------------------------------
 void setup(void) {
-#if I2C_CPUFREQ == (F_CPU/8)
-  CPUSlowDown();
+  pinMode(LEDPIN, OUTPUT);
+  digitalWrite(LEDPIN, LOW);
+#if I2C_CPUFREQ != F_CPU
+  CPUSlowDown(F_CPU/I2C_CPUFREQ);
 #endif
-  Serial.begin(19200); // in case of CPU slow down, change to baud rate / 8!
+  Serial.begin(38400); // in case of CPU slow down, change to baud rate / 8!
   if (!initBma()) {
+#ifdef TERMOUT
     Serial.println(F("INIT ERROR"));
+#else
+    while (1);
+#endif
   }
 
 }
 
 void loop(void){
-  if (!readBma()) Serial.println(F("READ ERROR"));
+  if (!readBma()) {
+#ifdef TERMOUT
+    Serial.println(F("READ ERROR"));
+#else
+    while (1);
+#endif
+  }
+#ifdef TERMOUT
   Serial.print(F("X="));
   Serial.print(xval);
   Serial.print(F("  Y="));
@@ -95,4 +130,11 @@ void loop(void){
   Serial.print(F("  Z="));
   Serial.println(zval);
   delay(300);
+#else
+  digitalWrite(LEDPIN, HIGH);
+  delay(500);
+  digitalWrite(LEDPIN, LOW);
+  delay(500);
+  delay(5000);
+#endif
 }

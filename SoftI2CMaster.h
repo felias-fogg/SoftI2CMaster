@@ -157,12 +157,12 @@ uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 #endif
 
 #if I2C_FASTMODE
-#define I2C_DELAY_COUNTER (((I2C_CPUFREQ/400000L)/2-19)/3)
+#define I2C_DELAY_COUNTER (((I2C_CPUFREQ/350000L)/2-18)/3)
 #else
 #if I2C_SLOWMODE
-#define I2C_DELAY_COUNTER (((I2C_CPUFREQ/25000L)/2-19)/3)
+#define I2C_DELAY_COUNTER (((I2C_CPUFREQ/23500L)/2-18)/3)
 #else
-#define I2C_DELAY_COUNTER (((I2C_CPUFREQ/100000L)/2-19)/3)
+#define I2C_DELAY_COUNTER (((I2C_CPUFREQ/90000L)/2-18)/3)
 #endif
 #endif
 

@@ -12,9 +12,13 @@ It assumes a single master and does not support bus arbitration. It
 allows for clock stretching by slave devices and also can detect lock
 ups of the I2C bus, i.e., if the SCL line is held low indefinitely.
 
-Even on 1MHz systems, you can get a transfer speed of 40 kbit/sec, so
+Even on 1MHz systems, you can get a transfer speed of around 40 kbit/sec, so
 you can use it to interface with SMbus devices.
 
 In the program text before including this library, you have to define
 all the necessary constants such as  SDA_PIN, SDA_PORT, SCL_PIN, and
-SCL_PORT 
+SCL_PORT.
+
+For a full description see: http://playground.arduino.cc/Main/SoftwareI2CLibrary
+
+Note: The port ports H and above on ATmega256 are not supported.

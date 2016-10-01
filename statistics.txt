@@ -1,0 +1,81 @@
+Wire needs:
+2530-450-124 = 1956 bytes flash
+217-9 = 208 bytes ram
+
+SoftI2C needs:
+730-450-28 = 252 bytes flash
+9-9 = 0 bytes ram
+
+SoftWire needs:
+1286-450-124 = 712
+73-9 = 64
+
+================================================
+
+Max Speed		16MHz	8MHz	4MHz	2MHz	1MHz
+Fast				380           260          182            90            50
+Fast/Timout		380           167          182            90            50
+Normal			  92            95             95            95            50
+Normal/Timeout        92          104             95            90            50
+Slow			  25            25             25            25            25
+Slow/Timeout            25            25	           25            25            25
+
+================================================
+24AA1025 performance
+
+Fast
+
+Sequential reads ...
+Time: 22 micro secs/byte
+Random reads ...
+Time: 121 micro secs/byte
+Random writes ...
+Time: 6103 micro secs/byte
+Page writes with wait ...
+Time: 71 micro secs/byte
+Page writes with poll ...
+Time: 51 micro secs/byte
+
+
+Normal
+
+Sequential reads ...
+Time: 92 micro secs/byte
+Random reads ...
+Time: 523 micro secs/byte
+Random writes ...
+Time: 6421 micro secs/byte
+Page writes with wait ...
+Time: 149 micro secs/byte
+Page writes with poll ...
+Time: 129 micro secs/byte
+
+
+Sequential reads ...
+Time: 92 micro secs/byte
+Random reads ...
+Time: 523 micro secs/byte
+Random writes ...
+Time: 6421 micro secs/byte
+Page writes with wait ...
+Time: 149 micro secs/byte
+Page writes with poll ...
+Time: 129 micro secs/byte
+
+Slow
+
+
+Performance test:
+Sequential reads ...
+Time: 363 micro secs/byte
+Random reads ...
+Time: 1975 micro secs/byte
+Random writes ...
+Time: 7542 micro secs/byte
+Page writes with wait ...
+Time: 421 micro secs/byte
+Page writes with poll ...
+Time: 401 micro secs/byte
+Unknown command
+
+

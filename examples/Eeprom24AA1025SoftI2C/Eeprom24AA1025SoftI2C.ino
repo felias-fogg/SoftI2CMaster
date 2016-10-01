@@ -1,16 +1,18 @@
 // Sketch to explore 24AA1024 using SoftI2C
 
-#define SDA_PORT PORTD
-#define SDA_PIN 3
-#define SCL_PORT PORTD
+#define SDA_PORT PORTC
+#define SDA_PIN 4
+#define SCL_PORT PORTC
 #define SCL_PIN 5
-#define I2C_FASTMODE 1
-// #define I2C_TIMEOUT 10 // timeout after 10 msec
-// #define I1C_NOINTERRUPT 1 // no interrupts
-// #define I2C_CPUFREQ (F_CPU/8) // slow down CPU frequency
+
+//#define I2C_SLOWMODE 1
+//#define I2C_FASTMODE 1
+//#define I2C_TIMEOUT 10 // timeout after 10 msec
+//#define I1C_NOINTERRUPT 1 // no interrupts
+//#define I2C_CPUFREQ (F_CPU/8) // slow down CPU frequency
 #include <SoftI2CMaster.h>
 
-#define EEPROMADDR 0xA6 // set by jumper
+#define EEPROMADDR 0xA6 // set by jumper (A0 and A1 = High)
 #define MAXADDR 0x1FFFF
 #define MAXTESTADDR 0x003FF
 
@@ -233,10 +235,11 @@ void help (void) {
 void setup(void) {
 #if I2C_CPUFREQ == (F_CPU/8)
   CPUSlowDown();
+  Serial.begin(38400);
+#else
+  Serial.begin(115200);
 #endif
-
-  Serial.begin(19200);
-  Serial.println(F("\n\nTest program for EEPROM 24AA1024"));
+  Serial.println(F("\n\nTest program for EEPROM 24AA1025 (SoftI2CMaster)"));
   help();
 }
 
@@ -302,6 +305,10 @@ void loop(void) {
     break;
   case 'h':
     help();
+    break;
+  case '\r':
+  case '\n':
+  case ' ':
     break;
   default:
     Serial.println(F("Unknown command"));
