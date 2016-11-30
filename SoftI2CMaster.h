@@ -258,7 +258,7 @@ void i2c_wait_scl_high(void)
 }
 
 
-boolean i2c_init(void)
+bool i2c_init(void)
 {
   __asm__ __volatile__ 
     (" cbi      %[SDADDR],%[SDAPIN]     ;release SDA \n\t" 
