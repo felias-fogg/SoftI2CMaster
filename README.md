@@ -21,4 +21,6 @@ SCL_PORT.
 
 For a full description see: http://playground.arduino.cc/Main/SoftwareI2CLibrary
 
-Note: The port ports H and above on ATmega256 are not supported.
+Note: The port ports H and above on ATmega256 are not supported. And,
+since it makes heavy use of assembler code, it does not run on ARM
+MCUs (Due, Zero, etc.).
