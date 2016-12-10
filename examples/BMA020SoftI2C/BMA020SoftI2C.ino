@@ -1,9 +1,10 @@
+// -*- c++ -*-
 // Simple sketch to read out BMA020 using SoftI2C
 
 // Readout BMA020 chip
 
 // use low processor speed (you have to change the baud rate to 2400!) 
-#define I2C_CPUFREQ (F_CPU/16)
+//#define I2C_CPUFREQ (F_CPU/16)
 //#define NO_INTERRUPT 1
 //#define I2C_FASTMODE 1
 //#define I2C_SLOWMODE 1
@@ -100,10 +101,11 @@ boolean readBma(void)
 void setup(void) {
   pinMode(LEDPIN, OUTPUT);
   digitalWrite(LEDPIN, LOW);
+  i2c_init();
 #if I2C_CPUFREQ != F_CPU
   CPUSlowDown(F_CPU/I2C_CPUFREQ);
 #endif
-  Serial.begin(38400); // in case of CPU slow down, change to baud rate / 8!
+  Serial.begin(19200); // in case of CPU slow down, change to baud rate / FAC!
   if (!initBma()) {
 #ifdef TERMOUT
     Serial.println(F("INIT ERROR"));

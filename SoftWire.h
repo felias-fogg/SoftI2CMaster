@@ -60,8 +60,7 @@ public:
     if (transmitting) {
       error = (i2c_rep_start((address<<1)|I2C_WRITE) ? 0 : 2);
     } else {
-      i2c_start_wait((address<<1)|I2C_WRITE);
-      error = 0;
+      error = (i2c_start((address<<1)|I2C_WRITE) ? 0 : 2);
     }
     // indicate that we are transmitting
     transmitting = 1;
