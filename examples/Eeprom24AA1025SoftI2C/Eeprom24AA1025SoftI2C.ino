@@ -1,3 +1,4 @@
+// -*-c++-*-
 // Sketch to explore 24AA1024 using SoftI2C
 
 #define SDA_PORT PORTC
@@ -14,7 +15,7 @@
 
 #define EEPROMADDR 0xA6 // set by jumper (A0 and A1 = High)
 #define MAXADDR 0x1FFFF
-#define MAXTESTADDR 0x003FF
+#define MAXTESTADDR 0x007FF
 
 void CPUSlowDown(void) {
   // slow down processor by a factor of 8

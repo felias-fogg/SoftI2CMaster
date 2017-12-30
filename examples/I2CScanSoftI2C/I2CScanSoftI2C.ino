@@ -1,26 +1,26 @@
 // -*-c++-*-
 // Scan I2C bus for device responses
 
-// use ports usually used for hardware I2C
-#define SDA_PORT PORTC
-#define SDA_PIN 4
-#define SCL_PORT PORTC
-#define SCL_PIN 5
+/*
+#define SDA_PORT PORTA
+#define SDA_PIN 1
+#define SCL_PORT PORTA
+#define SCL_PIN 2
+*/
 
-#define I2C_TIMEOUT 100
+#define I2C_TIMEOUT 0
 #define I2C_NOINTERRUPT 0
-#define I2C_SLOWMODE 1
+#define I2C_FASTMODE 0
 #define FAC 1
 #define I2C_CPUFREQ (F_CPU/FAC)
 
-
-/* Corresponds to A4/A5 - the hardware I2C pins on Arduinos
+/* Corresponds to A4/A5 - the hardware I2C pins on Arduinos */
 #define SDA_PORT PORTC
 #define SDA_PIN 4
 #define SCL_PORT PORTC
 #define SCL_PIN 5
 #define I2C_FASTMODE 0
-*/
+
 
 /*
 #define SDA_PORT PORTC
@@ -46,7 +46,7 @@ void setup(void) {
   CPUSlowDown(FAC);
 #endif
 
-  Serial.begin(115200); // change baudrate to 2400 on terminal when low CPU freq!
+  Serial.begin(57600); // change baudrate to 2400 on terminal when low CPU freq!
   Serial.println(F("Intializing ..."));
   Serial.print("I2C delay counter: ");
   Serial.println(I2C_DELAY_COUNTER);

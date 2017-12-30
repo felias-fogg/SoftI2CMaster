@@ -1,0 +1,22 @@
+SoftWire	KEYWORD1
+begin		KEYWORD2
+end		KEYWORD2
+setClock	KEYWORD2
+beginTransmission	KEYWORD2
+endTransmission		KEYWORD2
+write			KEYWORD2
+requestFrom		KEYWORD2
+available		KEYWORD2
+read			KEYWORD2
+peek			KEYWORD2
+
+i2c_init		KEYWORD2
+i2c_start		KEYWORD2
+i2c_start_wait		KEYWORD2
+i2c_rep_start		KEYWORD2
+i2c_stop		KEYWORD2
+i2c_write		KEYWORD2
+i2c_read		KEYWORD2
+
+I2C_READ		LITERAL1
+I2C_WRITE		LITERAL1
