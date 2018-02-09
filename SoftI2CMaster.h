@@ -89,8 +89,7 @@ bool __attribute__ ((noinline)) i2c_init(void) __attribute__ ((used));
 // Return: true if the slave replies with an "acknowledge", false otherwise
 bool __attribute__ ((noinline)) i2c_start(uint8_t addr) __attribute__ ((used)); 
 
-// Similar to start function, but wait for an ACK! Be careful, this can 
-// result in an infinite loop!
+// Similar to start function, but wait for an ACK! Will timeout if I2C_MAXWAIT > 0.
 bool  __attribute__ ((noinline)) i2c_start_wait(uint8_t addr) __attribute__ ((used));
 
 // Repeated start function: After having claimed the bus with a start condition,
@@ -161,7 +160,7 @@ uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 #endif
 #endif
 
-// I2X_MAXWAIT can be set to any value between 0 and 32767. 0 means no time out.
+// I2C_MAXWAIT can be set to any value between 0 and 32767. 0 means no time out.
 #ifndef I2C_MAXWAIT
 #define I2C_MAXWAIT 5000
 #else

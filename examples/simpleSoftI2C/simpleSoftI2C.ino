@@ -10,7 +10,7 @@
 
 #define I2C_7BITADDR 0x68 // DS1307
 #define MEMLOC 0x0A
-#define ADDRLEN 1
+#define ADDRLEN 1 // address length, usually 1 or 2 bytes
 
 void setup(void) {
   Serial.begin(57600);
@@ -20,6 +20,7 @@ void setup(void) {
 void loop(void){
   if (!i2c_start_wait((I2C_7BITADDR<<1)|I2C_WRITE)) {
     Serial.println("I2C device busy");
+    delay(1000);
     return;
   }
   for (byte i=1; i<ADDRLEN; i++) i2c_write(0x00);

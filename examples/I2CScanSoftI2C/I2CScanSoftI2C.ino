@@ -65,6 +65,7 @@ void loop(void)
   Serial.println("       8-bit 7-bit addr");
   // try read
   do {
+    delay(100);
     if (i2c_start(add | I2C_READ)) {
       found = true;
       i2c_read(true);

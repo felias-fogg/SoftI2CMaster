@@ -9,9 +9,10 @@ library is sufficient most of the time when you want to communicate
 with devices, there are situations when it is not applicable:
 * the I2C pins SDA/SCL are in use already for other purposes,
 * the code shall run on an ATtiny processor with 1 MHz on arbitrary pins,
-* you are short on memory (flash and RAM).
+* you are short on memory (flash and RAM), or
+* you do not want to use the implicitly enabled pull-up resistors
+  because your devices are run with 3 volts.
 
-If you simply want to access I2C devices from a MCU, there are easier ways.
 I adapted [Peter Fleury's I2C software
 library](http://homepage.hispeed.ch/peterfleury/avr-software.html)
 that is written in AVR assembler, extremely light weight (just 250
@@ -245,6 +246,18 @@ device, with an address space < 256 (i.e. one byte for addressing)
 	    delay(1000);
 	}
 
+## I2CShell
+
+In the example directory, you find a much more elaborate example:
+<code>I2CShell</code>. This sketch can be used to interact with I2C
+devices similar in the way you can use the Bus Pirate. For example,
+you can type:
+
+    [ 0xAE 0 0 [ 0xAF r:5 ]
+
+This will address the I2C device under the (8-bit) address in write
+mode, set the reading register to 0, then opens the same device again
+in read mode and read 5 registers. 
 
 ## Alternative Interface
 
