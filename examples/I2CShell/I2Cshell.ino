@@ -8,33 +8,44 @@
  *
  * V 0.9 (08-FEB-18)
  * - first full version working with SoftI2CMaster
+ * V 1.0 (10-Feb-18)
+ * - numerous bug fixes
+ * - dynamic changes of pullups and clock frequency
+ * - storing macros in EEPROM
  */
 
+#define VERSION "1.0"
+#define USEEEPROM 1
+#define I2C_HARDWARE 1
+
+
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+#include <EEPROM.h>
+
 #define HELPSTRING "Commands:\r\n" \
-                   "H       - help                        S      - scan I2C bus\r\n" \
-                   "L       - list macros                 <dig>= - define macro\r\n" \
-                   "Ctrl-P  - retrieve last input & edit  P      - print last exec trace\r\n" \
-                   "[ ...   - I2C command\r\n" \
+                   "H       - help                        S       - scan I2C bus\r\n" \
+                   "T       - print last exec trace       <dig>=  - define macro\r\n" \
+                   "L       - list macros                 L<dig>  - list <dig> macro\r\n" \
+                   "P       - show status of pullups      P<dig>  - enable/disable(1/0) pullups\r\n" \
+                   "F       - show current I2C frequency  F<num>  - set I2C frequency in kHz\r\n" \
+                   "Ctrl-P  - retrieve last input & edit  [ ...   - I2C command\r\n" \
                    "I2C command syntax:\r\n" \
                    "[       - (repeated) start condition  {       - start, polling for ACK\r\n" \
                    "]       - stop condition              r       - read byte\r\n" \
                    "<num>   - address or write byte       :<num>  - repeat previous <num> times\r\n" \
-                   "&       - microsecond pause           (<dig>) - macro call\r\n" \
+                   "&       - microsecond pause           %       - millisecond pause\r\n" \
+                   "(<dig>) - macro call\r\n\n" \
                    "<dig> is a single digit between 0 and 9.\r\n" \
                    "<num> is any number between 0 and 255 in decimal, hex, octal or binary\r\n" \
                    "using the usual notation, e.g., 0xFF, 0o77, 0b11\r\n" \
                    "<num>? denotes a 7-bit I2C read address, <num>! a write address,\r\n" \
                    "i.e., <num>? = 2x<num>+1 and <num>! = 2x<num>.\r\n"
 
-#define VERSION "0.9"
-
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
 
 // constants for the I2C interface
-#define I2C_TIMEOUT 20
+#define I2C_TIMEOUT 100
 #define I2C_PULLUP 1
 #define SDA_PORT PORTC
 #define SDA_PIN 4 // = A4
@@ -44,11 +55,16 @@
 
 #include <SoftI2CMaster.h>
 
-
 // constants for this program
 #define LINELEN 80
-#define MAXCMDS 255
+#define MAXCMDS 300
 #define MACROS 5 // note: each macro needs LINELEN space!
+
+// magic code for EEPROM
+#define MAGICKEY 0xA15A372FUL
+
+// start of saving area for macros
+#define EEMACSTART 4
 
 // error codes
 #define EXECOVF_ERR -1
@@ -65,11 +81,11 @@
 // exec type (cmds & results)
 typedef enum { START, REPSTART, WSTART, WREPSTART,
 	       WRITE, WRITE_ACK, WRITE_NAK,
-	       READ_ACK, READ_NAK, PAUSE, STOP, EOC, LOOP } exec_t;
+	       READ_ACK, READ_NAK, PAUSE, LPAUSE, STOP, EOC, LOOP } exec_t;
 
 // token types
 typedef enum { EOL_TOK, START_TOK, WSTART_TOK, STOP_TOK,  NUM_TOK, READ_TOK,
-	       WAIT_TOK, REPEAT_TOK, MAC_TOK, UNDEF_TOK } token_t;
+	       WAIT_TOK, LWAIT_TOK, REPEAT_TOK, MAC_TOK, UNDEF_TOK } token_t;
 
 // global variables
 char line[LINELEN*2+1] = { '\0' };
@@ -78,17 +94,22 @@ byte vals[MAXCMDS];
 char macroline[MACROS][LINELEN+1];
 char illegal_char;
 long illegal_num;
+int i2cfreq = (I2C_FASTMODE ? 400 : (I2C_SLOWMODE ? 25 : 100));
+bool i2cpullups = (I2C_PULLUP != 0);
+
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println(F("\n\n\rI2C Shell Version " VERSION));
   if (!i2c_init()) {
-    Serial.println(F("Sorry! I2C bus is locked up!"));
-    Serial.println(F("Giving up!"));
-    while (1);
+    Serial.println(F("I2C bus is locked up or there are no pullups!"));
   }
   for (byte i=0; i < MACROS; i++) macroline[i][0] = '\0';
+#ifdef USEEEPROM
+  getMacrosEEPROM();
+  for (byte i=0; i < MACROS; i++) macroline[i][LINELEN] = '\0';
+#endif
 }
 
 void loop()
@@ -96,25 +117,26 @@ void loop()
   int lineres, errpos;
   Serial.print(F("I2C>"));
   readLine(line, 0);
-  if (strlen(line) == 1) 
-    switch (toupper(line[0])) {
-    case 'H':
-      help();
-      return;
-    case 'L':
-      list();
-      return;
-    case 'S':
-      scan();
-      return;
-    case 'P':
-      report(cmds, vals);
-      return;
-    case '\x10':
-      Serial.print(line);
-      readLine(line, strlen(line));
-      break;
-    }
+  switch (toupper(line[0])) {
+  case 'H':
+    help();
+    return;
+  case 'L':
+    list(line[1]);
+    return;
+  case 'S':
+    scan();
+    return;
+  case 'T':
+    report(cmds, vals);
+    return;
+  case 'P':
+    pullups(line[1]);
+    return;
+  case 'F':
+    frequency(line);
+    return;
+  }
   lineres = parseLine(line, cmds, vals, errpos);
   if (lineres == 0) {
     execute(cmds, vals);
@@ -161,15 +183,25 @@ void loop()
 void storeMacro(int macnum, char *line)
 {
   strncpy(macroline[macnum], &(line[2]), LINELEN+1);
+#ifdef USEEEPROM
+  putMacrosEEPROM();
+#endif
 }
 
 
-void list()
+void list(char index)
 {
-  for (byte i=0; i < MACROS; i++) {
+  byte i = index - '0';
+  if (i >= 0 && i < MACROS) {
     Serial.print(i);
     Serial.print(F("="));
     Serial.println(macroline[i]);
+  } else {
+    for (i=0; i < MACROS; i++) {
+      Serial.print(i);
+      Serial.print(F("="));
+      Serial.println(macroline[i]);
+    }
   }
 }
     
@@ -178,8 +210,6 @@ void help() {
   Serial.println(F("\nI2C Shell Version " VERSION));
   Serial.println(F(HELPSTRING));
 }
-
-
 
 // read one line until a CR/LF is entered or line limit is reached
 bool readLine(char *buf, int i)
@@ -196,7 +226,6 @@ bool readLine(char *buf, int i)
       Serial.read();
       next = '\0';
     }
-    if (next >= '\0' || next < '\x7F') Serial.write(next);
     switch (next) {
     case '\r':
     case '\n':
@@ -216,13 +245,14 @@ bool readLine(char *buf, int i)
       }
       break;
     default:
-      if (i == LINELEN)
-	buf[i] = 0;
-      else if (next >= ' ')
+      if (next >= ' ' && next < '\x7F' && i < LINELEN) {
 	buf[i++] = next;
+	Serial.write(next);
+      }
       break;
     }
   }
+  buf[i] = '\0'; 
   Serial.print("\r\n");
   delay(50);
   while (Serial.available() && (Serial.peek() == '\r' || Serial.peek() == '\n')) Serial.read();
@@ -333,6 +363,10 @@ int parseLineHelper(char *buf, exec_t *cmds, byte *vals, int &lineix, int &execi
       if (execix > MAXCMDS-3) return EXECOVF_ERR; // reserve one for EOC, one for STOP
       cmds[execix++] = PAUSE;
       break;
+    case LWAIT_TOK:
+      if (execix > MAXCMDS-3) return EXECOVF_ERR; // reserve one for EOC, one for STOP
+      cmds[execix++] = LPAUSE;
+      break;
     case REPEAT_TOK:
       if (execix > MAXCMDS-3) return EXECOVF_ERR; // reserve one for EOC, one for STOP
       if (execix > 0) {
@@ -391,6 +425,7 @@ token_t nextToken(char *buf, int &i, long &value)
     case ']': token = STOP_TOK; break;
     case 'R': token = READ_TOK; break;
     case '&': token = WAIT_TOK; break;
+    case '%': token = LWAIT_TOK; break;
     case ':': token = REPEAT_TOK; break;
     case '(': token = MAC_TOK; break;
     default: token = UNDEF_TOK; illegal_char = buf[i]; break;
@@ -508,6 +543,11 @@ void execute(exec_t *cmds, byte *vals)
       if (cmds[i] == LOOP) delayMicroseconds(vals[i++]);
       else delayMicroseconds(1);
       break;
+    case LPAUSE:
+      i++;
+      if (cmds[i] == LOOP) delay(vals[i++]);
+      else delay(1);
+      break;
     case STOP: 
       i++;
       if (cmds[i] == LOOP) {
@@ -571,19 +611,24 @@ void report(exec_t *cmds, byte *vals)
       break;
     case READ_ACK: 
     case READ_NAK: 
-      Serial.print(F("Read byte: "));
+      Serial.print(F("Read byte: 0x"));
       if (vals[i] < 0x10) Serial.print(0);
       Serial.print(vals[i], HEX);
       Serial.println(((cmds[i] == READ_ACK ? " + ACK" : " + NAK")));
       break;
+    case LPAUSE:
     case PAUSE:
-      Serial.print(F("Microsecond delay"));
+      if (cmds[i] == PAUSE)
+	Serial.print(F("Microsecond delay"));
+      else
+	Serial.print(F("Millisecond delay"));
       if (cmds[i+1] == LOOP) {
 	Serial.print(F(": "));
 	Serial.print(vals[i+1]);
 	Serial.print(F(" repetitions"));
       }
       Serial.println();
+      break;
     case STOP: 
       Serial.print(F("Stop condition"));
       if (cmds[i+1] == LOOP) {
@@ -603,7 +648,7 @@ void report(exec_t *cmds, byte *vals)
 
 void scan()
 {
-  Serial.println(F("Scanning ...\n"));
+  Serial.println(F("Scanning ..."));
   Serial.println(F(" 8-bit 7-bit addr"));
   for (int addr = 0; addr < 256; addr = addr+1) {
     if (i2c_start(addr)) {
@@ -620,4 +665,96 @@ void scan()
       delay(200); // 
     } else i2c_stop();
   }  
+}
+
+void pullups(char arg)
+{
+  if (arg == '\0') {
+    Serial.print(F("Pullups are currently "));
+    if (i2cpullups) Serial.println(F("enabled"));
+    else Serial.println(F("disabled"));
+    return;
+  }
+#if I2C_HARDWARE
+  if (arg == '1') { // enable pullups
+    digitalWrite(SDA, 1);
+    digitalWrite(SCL, 1);
+    Serial.println(F("Pullups enabled"));
+  } else if (arg == '0') { // disable pullups
+    digitalWrite(SDA, 0);
+    digitalWrite(SCL, 0);
+    Serial.println(F("Pullups disabled"));
+  } else {
+    Serial.println(F("Specify 0 or 1 with P command or append nothing"));
+  }
+#else
+  Serial.println(F("Set I2C_HARDWARE constant to 1 in sketch"));
+  Serial.println(F("when you want to change pullups dynamically"));
+#endif
+}
+
+void frequency(char *line)
+{
+  token_t token;
+  long value;
+  int ix = 1;
+  int bitrate;
+  
+  token = nextToken(line, ix, value);
+  if (token != NUM_TOK) {
+    Serial.print(F("I2C clock frequency is "));
+    Serial.print(i2cfreq);
+    Serial.println(F(" kHz"));
+    return;
+  }
+#if I2C_HARDWARE
+  if (value < 1 || value > 400) {
+    Serial.println(F("Cannot set I2C clock frequency lower than 1 or higher than 400 kHz"));
+    return;
+  }
+  i2cfreq = value;
+  Serial.print(F("I2C clock frequency set to "));
+  Serial.print(i2cfreq);
+  Serial.println(F(" kHz"));
+  bitrate = (I2C_CPUFREQ/(value*1000UL)-16)/2;
+  if (bitrate >= 10 && bitrate <= 255) {
+    TWSR = 0;
+    TWBR = bitrate;
+    return;
+  }
+  bitrate = bitrate/4;
+  if (bitrate >= 10 && bitrate <= 255) {
+    TWSR = (1<<TWPS0);
+    TWBR = bitrate;
+    return;
+  }
+  bitrate = bitrate/4;
+  if (bitrate >= 10 && bitrate <= 255) {
+    bitrate = (I2C_CPUFREQ/(value*1000UL)-16)/32;
+    TWSR = (1<<TWPS1);
+    TWBR = bitrate;
+  }
+  bitrate = bitrate/4;
+  TWSR = (1<<TWPS1)|(1<<TWPS0);
+  TWBR = bitrate;
+  return;
+#else
+  Serial.println(F("Set I2C_HARDWARE constant to 1 in sketch"));
+  Serial.println(F("when you want to change the frequency dynamically"));
+#endif
+}
+
+void getMacrosEEPROM()
+{
+  unsigned long key;
+  EEPROM.get(0, key);
+  if (key == MAGICKEY) 
+    EEPROM.get(EEMACSTART, macroline);
+}
+
+void putMacrosEEPROM()
+{
+  unsigned long key = MAGICKEY;
+  EEPROM.put(0, key);
+  EEPROM.put(EEMACSTART, macroline);
 }

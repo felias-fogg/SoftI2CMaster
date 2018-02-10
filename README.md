@@ -15,7 +15,7 @@ with devices, there are situations when it is not applicable:
 
 I adapted [Peter Fleury's I2C software
 library](http://homepage.hispeed.ch/peterfleury/avr-software.html)
-that is written in AVR assembler, extremely light weight (just 250
+that is written in AVR assembler, extremely light weight (just under 500
 byte in flash) and very
 fast. Even on an ATtiny running with 1MHz, one can still operate the
 bus with 33 kHz, which implies that you can drive slave devices that
@@ -38,7 +38,8 @@ This library has the following features:
 * timeout on ACK polling for busy devices (new!)
 * internal MCU pullup resistors can be used (new!)
 * can make use of almost any pin (except for pins on port H and above on large ATmegas)
-* very lightweight (roughly 250 bytes of flash and 0 byte of RAM, except for call stack)
+* very lightweight (roughly 500 bytes of flash and 0 byte of RAM, except for call stack)
+* it is not interrupt-driven
 * very fast (standard and fast mode on ATmega328, 33 kHz on ATtiny
 with 1 MHz CPU clock)
 * Optional <code>Wire</code> library compatible interface
@@ -86,8 +87,15 @@ There are a few other constants that you can define in order to
 control the behavior of the library. You have to specify them before
 the <code>include</code> statement so that they can take effect. Note
 that this different from the usual form of libraries! This library is
-always compiled with you sketch and therefore the <code>defines</code>
+always compiled with your sketch and therefore the <code>defines</code>
 need to be specfied before the inclusion of the library!
+
+    #define I2C_HARDWARE 1
+Although this is basically a bit-banging library, there is the
+possibility to use the hardware support for I2C, if you happen
+to run this library on an MCU that supports this. If this constant is
+set to 1, then the hardware registers are used (and you are forced to
+use the standard SDA and SCL pins).
 
     #define I2C_PULLUP 1
 With this definition you enable the internal pullup resistores of the
@@ -282,14 +290,80 @@ create a <code>SoftWire</code> instance:
 
 This interface sacrifices some of the advantages of the original
 library, in particular its small footprint, but comes handy if you
-need a replacement of the original *Wire* library. The following table
-lists the memory requirements of the different libraries.
+need a replacement of the original *Wire* library. The following section
+sketches the memory footprint of different I2C libraries.
+
+## Memory requirements
+
+In order to measure the memory requirements of the different
+libraries, I wrote a baseline sketch, which contains all necessary I2C
+calls for reading and writing an EEPROM device, and compiled it
+against a library with empty functions. Then all the other libraries
+were used. For the Wire-like libraries, I had to rewrite the sketch,
+but it has the same functionality. The memory requirements differ
+somewhat from ATmega to ATtiny, but the overall picture is
+similar. The take-home message is: If you are short on memory (flash
+or RAM), it
+makes sense to use the SoftI2CMaster library. 
 
 <table align="right">
-<tr><th></th><th align="right">Wire</th><th align="right">SoftI2CMaster</th><th align="right">SoftWire</th></tr>
-<tr><td align="right">Flash</td><td align="right"> 1956</td><td align="right"> 252</td><td align="right"> 712</td></tr>
-<tr><td align="right">RAM</td><td align="right"> 208</td><td align="right"> 0</td><td align="right"> 64</td></tr>
+<tr><td colspan="10" align="center">ATmega328</td></tr>
+<tr><th>Library</th><th align="center">SoftI2C-</th><th align="center">SoftI2C-</th><th
+align="center">SoftI2C-</th><th align="center">Soft-</th><th
+align="center">SlowSoft-</th><th align="center">SlowSoft-</th><th
+align="center">USI-</th><th align="center">Tiny-</th><th
+align="center">Wire</th></tr>
+<tr><th></th><th align="center">Master</th><th align="center">Master</th><th
+align="center">Master</th><th align="center">Wire</th><th
+align="center">I2CMaster</th><th align="center">Wire</th><th
+align="center">Wire</th><th align="center">Wire</th><th
+align="center"></th></tr>
+<tr><th>Option</th><th align="center"></th><td align="center">Pullup+Timeout</td><td
+align="center">Hardware</td><th align="center"></th><th
+align="center"></th><th align="center"></th><th
+align="center"></th><th align="center"></th><th
+align="center"></th></tr>
+<tr><td>Flash</td><td align="right">482</td><td align="right">564</td><td
+align="right">434</td><td align="right">1066</td><td
+align="right">974</td><td align="right">1556</td><td
+align="center">-</td><td align="center">-</td><td
+align="right">1972</td></tr>
+<tr><td>RAM</td><td align="right">0</td><td align="right">0</td><td
+align="right">0</td><td align="right">66</td><td
+align="right">4</td><td align="right">70</td><td
+align="center">-</td><td align="center">-</td><td
+align="right">210</td></tr>
 </table>
+
+<table align="right">
+<tr><td colspan="10" align="center">ATtiny85</td></tr>
+<tr><th>Library</th><th align="center">SoftI2C-</th><th align="center">SoftI2C-</th><th
+align="center">SoftI2C-</th><th align="center">Soft-</th><th
+align="center">SlowSoft-</th><th align="center">SlowSoft-</th><th
+align="center">USI-</th><th align="center">Tiny-</th><th
+align="center">Wire</th></tr>
+<tr><th></th><th align="center">Master</th><th align="center">Master</th><th
+align="center">Master</th><th align="center">Wire</th><th
+align="center">I2CMaster</th><th align="center">Wire</th><th
+align="center">Wire</th><th align="center">Wire</th><th
+align="center"></th></tr>
+<tr><th>Option</th><th align="center"></th><td align="center">Pullup+Timeout</td><td
+align="center">Hardware</td><th align="center"></th><th
+align="center"></th><th align="center"></th><th
+align="center"></th><th align="center"></th><th
+align="center"></th></tr>
+<tr><td>Flash</td><td align="right">428</td><td align="right">510</td><td
+align="center">-</td><td align="right">1002</td><td
+align="right">732</td><td align="right">1292</td><td
+align="right">1108</td><td align="right">1834</td><td
+align="center">-</td></tr>
+<tr><td>RAM</td><td align="right">0</td><td align="right">0</td><td
+align="center">-</td><td align="right">66</td><td
+align="right">4</td><td align="right">70</td><td
+align="right">45</td><td align="right">86</td><td
+align="center">-</td></tr>
+</table>
+
 
 ## Shortcomings
 
