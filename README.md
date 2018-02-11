@@ -93,8 +93,8 @@ need to be specfied before the inclusion of the library!
     #define I2C_HARDWARE 1
 Although this is basically a bit-banging library, there is the
 possibility to use the hardware support for I2C, if you happen
-to run this library on an MCU that supports this. If this constant is
-set to 1, then the hardware registers are used (and you are forced to
+to run this library on an MCU such as the ATmega328 that implements this. If this constant is
+set to 1, then the hardware registers are used (and you have to
 use the standard SDA and SCL pins).
 
     #define I2C_PULLUP 1
