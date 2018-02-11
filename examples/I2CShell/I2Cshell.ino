@@ -12,9 +12,12 @@
  * - numerous bug fixes
  * - dynamic changes of pullups and clock frequency
  * - storing macros in EEPROM
+ * V 1.1 (11-Feb-18)
+ * - line editing added
+ * - documentation completed
  */
 
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define USEEEPROM 1
 #define I2C_HARDWARE 1
 
@@ -30,18 +33,22 @@
                    "L       - list macros                 L<dig>  - list <dig> macro\r\n" \
                    "P       - show status of pullups      P<dig>  - enable/disable(1/0) pullups\r\n" \
                    "F       - show current I2C frequency  F<num>  - set I2C frequency in kHz\r\n" \
-                   "Ctrl-P  - retrieve last input & edit  [ ...   - I2C command\r\n" \
+                   "[ ...   - I2C command\r\n" \
                    "I2C command syntax:\r\n" \
                    "[       - (repeated) start condition  {       - start, polling for ACK\r\n" \
                    "]       - stop condition              r       - read byte\r\n" \
                    "<num>   - address or write byte       :<num>  - repeat previous <num> times\r\n" \
                    "&       - microsecond pause           %       - millisecond pause\r\n" \
-                   "(<dig>) - macro call\r\n\n" \
-                   "<dig> is a single digit between 0 and 9.\r\n" \
-                   "<num> is any number between 0 and 255 in decimal, hex, octal or binary\r\n" \
-                   "using the usual notation, e.g., 0xFF, 0o77, 0b11\r\n" \
-                   "<num>? denotes a 7-bit I2C read address, <num>! a write address,\r\n" \
-                   "i.e., <num>? = 2x<num>+1 and <num>! = 2x<num>.\r\n"
+                   "(<dig>) - macro call\r\n" \
+                   "Editing commands:\r\n"\
+                   "^A, UP  - Go to start of line         ^B,LEFT - go one char to back\r\n"\
+                   "^D      - delete current char         ^E,DOWN - go to end of line\r\n"\
+		   "^F,RIGHT- go one char forward         ^H, DEL - delete last character\r\n"\
+                   "^K      - kill rest of line           ^P      - retrieve previous line\r\n"\
+                   "$<dig>  - insert macro into line\r\n"\
+                   "<dig> is a single digit between 0 and 9. <num> is any number in decimal, hex,\r\n"\
+                   "octal or binary using the usual notation, e.g., 0xFF, 0o77, 0b11\r\n" \
+                   "<num>? denotes a 7-bit I2C read address, <num>! a write address." \
 
 
 // constants for the I2C interface
@@ -106,7 +113,7 @@ void setup()
     Serial.println(F("I2C bus is locked up or there are no pullups!"));
   }
   for (byte i=0; i < MACROS; i++) macroline[i][0] = '\0';
-#ifdef USEEEPROM
+#if USEEEPROM
   getMacrosEEPROM();
   for (byte i=0; i < MACROS; i++) macroline[i][LINELEN] = '\0';
 #endif
@@ -116,7 +123,7 @@ void loop()
 {
   int lineres, errpos;
   Serial.print(F("I2C>"));
-  readLine(line, 0);
+  readLine(line);
   switch (toupper(line[0])) {
   case 'H':
     help();
@@ -183,7 +190,7 @@ void loop()
 void storeMacro(int macnum, char *line)
 {
   strncpy(macroline[macnum], &(line[2]), LINELEN+1);
-#ifdef USEEEPROM
+#if USEEEPROM
   putMacrosEEPROM();
 #endif
 }
@@ -211,54 +218,134 @@ void help() {
   Serial.println(F(HELPSTRING));
 }
 
-// read one line until a CR/LF is entered or line limit is reached
-bool readLine(char *buf, int i)
+// read one line until a CR/LF is entered, do not accept more than LINELEN chars
+// implement a few basic line editing commands
+bool readLine(char *buf)
 {
   char next = '\0';
+  int i = 0, fill = 0, j;
 
   while (next != '\r' && next != '\n') {
     while (!Serial.available());
     next = Serial.read();
-    if (next == '\x1b') { 
+    if (next == '\x1b') { // filter out ESC-sequences
       while (!Serial.available());
-      Serial.read();
-      while (!Serial.available());
-      Serial.read();
-      next = '\0';
+      next = Serial.read();
+      if (next == '[') { 
+	while (!Serial.available());
+	next = 0;
+	switch(Serial.read()) {
+	case 'A': next = 'A'-0x40;
+	  break;
+	case 'B': next = 'E'-0x40;
+	  break;
+	case 'C': next = 'F'-0x40;
+	  break;
+	case 'D': next = 'B'-0x40;
+	}
+      } 
     }
+    if ('0' <= next && next < '0' + MACROS && i > 0)
+      if (buf[i-1] == '$') {
+	insertMacro(line, i, fill, next-'0');
+	continue;
+      }
     switch (next) {
-    case '\r':
-    case '\n':
-      buf[i] = 0;
-      break;
     case '\x7F':
     case '\b':
       if (i > 0) {
 	i--;
-	Serial.print(F("\b \b"));
+	Serial.write('\b');
+	deleteChar(buf, i, fill);
       }
       break;
-    case '\x10': // ^P
+    case 'A'-0x40: // ^A - start of line
+      moveCursor(line, i, fill, 0);
+      break;
+    case 'B'-0x40: // ^B - one char backwards
+      if (i > 0) moveCursor(line, i, fill, i-1);
+      break;
+    case 'D'-0x40: // ^D - delete current char
+      deleteChar(buf, i, fill);
+      break;
+    case 'E'-0x40: // ^E - end of line
+      moveCursor(line, i, fill, fill);
+      break;
+    case 'F'-0x40: // ^F - one character forward
+      if (i < fill) moveCursor(line, i, fill, i+1);
+      break;
+    case 'K'-0x40: // ^K - kill rest of line
+      while (i < fill) deleteChar(buf, i, fill);
+      break;
+    case 'P'-0x40: // ^P - previous line
       if (i == 0) {
 	Serial.print(buf);
 	while (i < LINELEN && buf[i]) i++;
+	fill = i;
       }
       break;
     default:
-      if (next >= ' ' && next < '\x7F' && i < LINELEN) {
-	buf[i++] = next;
-	Serial.write(next);
+      if (next >= ' ' && next < '\x7F' && fill < LINELEN) {
+	insertChar(buf, i, fill, next);
       }
       break;
     }
   }
-  buf[i] = '\0'; 
+  buf[fill] = '\0'; 
   Serial.print("\r\n");
   delay(50);
   while (Serial.available() && (Serial.peek() == '\r' || Serial.peek() == '\n')) Serial.read();
   return true;
 }
 
+void moveCursor(char *line, int &cursor, int &fill, int target)
+{
+  if (target < 0 || target > fill) return; 
+  if (target < cursor) {
+    while (target < cursor) { 
+      Serial.write('\b');
+      cursor--;
+    }
+  } else {
+    while (target > cursor) {
+      Serial.write(line[cursor]);
+      cursor++;
+    }
+  }
+}
+
+void deleteChar(char *line, int &cursor, int &fill)
+{
+  int i;
+  for (i = cursor; i < fill-1; i++) line[i] = line[i+1];
+  line[fill-1] = ' ';
+  i = cursor;
+  moveCursor(line, cursor, fill, fill);
+  moveCursor(line, cursor, fill, i);
+  fill--;
+}
+
+void insertChar(char *line, int &cursor, int &fill, char newch)
+{
+  int i;
+  if (fill >= LINELEN) return;
+  for (i = fill; i >= cursor; i--) line[i+1] = line[i];
+  line[cursor] = newch;
+  fill++;
+  i = cursor;
+  moveCursor(line, cursor, fill, fill);
+  moveCursor(line, cursor, fill, i+1);
+}
+
+void insertMacro(char *line, int &cursor, int &fill, int macid)
+{
+  int i=0;
+  moveCursor(line, cursor, fill, cursor-1);
+  deleteChar(line, cursor, fill);
+  while (macroline[macid][i] != '\0' && i < LINELEN) 
+    insertChar(line, cursor, fill, macroline[macid][i++]);
+}
+  
 int parseLine(char *buf, exec_t *cmds, byte *vals, int &lineix)
 {
   bool busreleased = true;
