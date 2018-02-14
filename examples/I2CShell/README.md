@@ -25,7 +25,7 @@ The output could look like as follows:
 <code>I2CShell</code> is part of the bit-banging I2C library
 [SoftI2CMaster](https://github.com/felias-fogg/SoftI2CMaster). After
 downloading this library, you find I2CShell as one of the examples in
-the <code>example</code> folder.
+the <code>examples</code> folder.
 
 Before you use the sketch, you should probably adjust some of the
 compile-time constants in the sketch. 
@@ -81,12 +81,13 @@ Unix). Baudrate is 115200, 8 bits, 1 stop bit, no parity bit.
 In the following _\<digit\>_ denotes a single decimal digit and *\<number\>*
 denotes a non-negative number in the usual notation, i.e., 17, 0x11,
 0X11, 0o21, or 0b10001
-can all be written if one wants to refer to the decimal number
+can all be written in order to refer to the decimal number
 seventeen. As a means to make life easier when converting between 8-bit
 and 7-bit addresses, one can postfix a number with <code>!</code> or
 <code>?</code> in order to signify the write, resp. read direction
 together with a 7-bit address. This means that, e.g. 0x10 can also be
-written as 0x08! and 0x11 as 0x08?.
+written as 0x08! and 0x11 as 0x08?. In general, the input is case
+insensitive. 
 
 There are a number of commands that one can use to interact with the
 program in order to configure it and to access the I2C bus:
@@ -128,6 +129,10 @@ window, as shown above. There exist the following commands:
   times. This is not allowed for start conditions and previous
   repetitions.
 * <code>(\<digit\>)</code> Execute macro.
+
+Between commands, one can  put commas and blanks in order to make the line
+more readable. The only point when you have to use such separators is
+when two numbers are adjacent. 
 
 ## Edit commands
 

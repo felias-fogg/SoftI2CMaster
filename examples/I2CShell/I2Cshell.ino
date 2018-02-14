@@ -15,9 +15,15 @@
  * V 1.1 (11-Feb-18)
  * - line editing added
  * - documentation completed
+ * V 1.2 (12-Feb)
+ * - changed the implementation of kill-rest-of-line
+ * - added line number for T-command
+ * - allowed now for 700 kHz as the maximum bus clock; works perfect, but
+ *   you definitely need low pullup resistors, the internal ones won't 
+ *   work at this speed.
  */
 
-#define VERSION "1.1"
+#define VERSION "1.2"
 #define USEEEPROM 1
 #define I2C_HARDWARE 1
 
@@ -29,12 +35,12 @@
 
 #define HELPSTRING "Commands:\r\n" \
                    "H       - help                        S       - scan I2C bus\r\n" \
-                   "T       - print last exec trace       <dig>=  - define macro\r\n" \
+                   "T       - print last exec trace       T<num>  - print 20 lines from line <num>\r\n"\
                    "L       - list macros                 L<dig>  - list <dig> macro\r\n" \
                    "P       - show status of pullups      P<dig>  - enable/disable(1/0) pullups\r\n" \
                    "F       - show current I2C frequency  F<num>  - set I2C frequency in kHz\r\n" \
-                   "[ ...   - I2C command\r\n" \
-                   "I2C command syntax:\r\n" \
+                   "<dig>=  - define macro                [ ...   - I2C interaction\r\n" \
+                   "I2C interaction syntax:\r\n" \
                    "[       - (repeated) start condition  {       - start, polling for ACK\r\n" \
                    "]       - stop condition              r       - read byte\r\n" \
                    "<num>   - address or write byte       :<num>  - repeat previous <num> times\r\n" \
@@ -47,7 +53,7 @@
                    "^K      - kill rest of line           ^P      - retrieve previous line\r\n"\
                    "$<dig>  - insert macro into line\r\n"\
                    "<dig> is a single digit between 0 and 9. <num> is any number in decimal, hex,\r\n"\
-                   "octal or binary using the usual notation, e.g., 0xFF, 0o77, 0b11\r\n" \
+                   "octal or binary using the usual notation, e.g., 0xFF, 0o77, 0b11.\r\n" \
                    "<num>? denotes a 7-bit I2C read address, <num>! a write address." \
 
 
@@ -65,7 +71,7 @@
 // constants for this program
 #define LINELEN 80
 #define MAXCMDS 300
-#define MACROS 5 // note: each macro needs LINELEN space!
+#define MACROS 5 // note: each macro needs LINELEN space
 
 // magic code for EEPROM
 #define MAGICKEY 0xA15A372FUL
@@ -104,7 +110,7 @@ long illegal_num;
 int i2cfreq = (I2C_FASTMODE ? 400 : (I2C_SLOWMODE ? 25 : 100));
 bool i2cpullups = (I2C_PULLUP != 0);
 
-
+/* ---------------------------- Main program ------------------------*/
 void setup()
 {
   Serial.begin(115200);
@@ -135,7 +141,7 @@ void loop()
     scan();
     return;
   case 'T':
-    report(cmds, vals);
+    report(line, cmds, vals);
     return;
   case 'P':
     pullups(line[1]);
@@ -147,7 +153,7 @@ void loop()
   lineres = parseLine(line, cmds, vals, errpos);
   if (lineres == 0) {
     execute(cmds, vals);
-    report(cmds, vals);
+    report("", cmds, vals);
   } else if (lineres > 0) {
     if (lineres-1 < MACROS) storeMacro(lineres-1, line);
     else {
@@ -187,36 +193,9 @@ void loop()
   }
 }
 
-void storeMacro(int macnum, char *line)
-{
-  strncpy(macroline[macnum], &(line[2]), LINELEN+1);
-#if USEEEPROM
-  putMacrosEEPROM();
-#endif
-}
+/* ---------------------------- Read line & editing ------------------------*/
 
 
-void list(char index)
-{
-  byte i = index - '0';
-  if (i >= 0 && i < MACROS) {
-    Serial.print(i);
-    Serial.print(F("="));
-    Serial.println(macroline[i]);
-  } else {
-    for (i=0; i < MACROS; i++) {
-      Serial.print(i);
-      Serial.print(F("="));
-      Serial.println(macroline[i]);
-    }
-  }
-}
-    
-
-void help() {
-  Serial.println(F("\nI2C Shell Version " VERSION));
-  Serial.println(F(HELPSTRING));
-}
 
 // read one line until a CR/LF is entered, do not accept more than LINELEN chars
 // implement a few basic line editing commands
@@ -275,7 +254,7 @@ bool readLine(char *buf)
       if (i < fill) moveCursor(line, i, fill, i+1);
       break;
     case 'K'-0x40: // ^K - kill rest of line
-      while (i < fill) deleteChar(buf, i, fill);
+      killRest(buf, i, fill);
       break;
     case 'P'-0x40: // ^P - previous line
       if (i == 0) {
@@ -314,6 +293,7 @@ void moveCursor(char *line, int &cursor, int &fill, int target)
   }
 }
 
+
 void deleteChar(char *line, int &cursor, int &fill)
 {
   int i;
@@ -323,6 +303,17 @@ void deleteChar(char *line, int &cursor, int &fill)
   moveCursor(line, cursor, fill, fill);
   moveCursor(line, cursor, fill, i);
   fill--;
+}
+
+
+void killRest(char *line, int &cursor, int &fill)
+{
+  int i;
+  for (i = cursor; i <= fill-1; i++) line[i] = ' ';
+  i = cursor;
+  moveCursor(line, cursor, fill, fill);
+  moveCursor(line, cursor, fill, i);
+  fill = i;
 }
 
 void insertChar(char *line, int &cursor, int &fill, char newch)
@@ -345,7 +336,10 @@ void insertMacro(char *line, int &cursor, int &fill, int macid)
   while (macroline[macid][i] != '\0' && i < LINELEN) 
     insertChar(line, cursor, fill, macroline[macid][i++]);
 }
-  
+
+/* ---------------------------- Parsing input line ------------------------*/
+
+
 int parseLine(char *buf, exec_t *cmds, byte *vals, int &lineix)
 {
   bool busreleased = true;
@@ -567,6 +561,9 @@ int parseMac(char *buf, int &i)
 }
 
 
+/* ---------------------------- Execution & reporting ------------------------*/
+
+
 void execute(exec_t *cmds, byte *vals)
 {
   int i = 0;
@@ -654,84 +651,134 @@ void execute(exec_t *cmds, byte *vals)
   }
 }
 
-void report(exec_t *cmds, byte *vals)
+void report(char *line, exec_t *cmds, byte *vals)
 {
  int i = 0;
  bool ack, nostart;
-  byte readval;
-  while (true) {
-    switch(cmds[i]) {
-    case START:
-      Serial.print(F("Start cond.: "));
-      break;
-    case REPSTART:
-      Serial.print(F("Rep. start cond.: "));
-      break;
-    case WSTART:
-      Serial.print(F("Start cond. ("));
-      Serial.print(vals[i]);
-      Serial.print(F(" NAKs): "));
-      break;
-    case WREPSTART:
-      Serial.print(F("Rep. start cond. ("));
-      Serial.print(vals[i]);
-      Serial.print(F(" NAKs): "));
-      break;
-    case WRITE_ACK:
-    case WRITE_NAK:
-      nostart = false;
-      if (i == 0 || (cmds[i-1] != START && cmds[i-1] != REPSTART && cmds[i-1] != WSTART && cmds[i-1] != WREPSTART)) {
-	Serial.print(F("Write byte: "));
-	nostart = true;
-      }
-      Serial.print(F("0x"));
-      if (vals[i] < 0x10) Serial.print(0);
-      Serial.print(vals[i], HEX);
-      if (!nostart) {
-	Serial.print(F(" (0x"));
-	if ((vals[i]>>1) < 0x10) Serial.print(0);
-	Serial.print((vals[i]>>1), HEX);
-	Serial.print(((vals[i])%2 == 0 ? "!" : "?"));
-	Serial.print(F(")"));
-      }
-      Serial.println(((cmds[i] == WRITE_ACK ? " + ACK" : " + NAK")));
-      break;
-    case READ_ACK: 
-    case READ_NAK: 
-      Serial.print(F("Read byte: 0x"));
-      if (vals[i] < 0x10) Serial.print(0);
-      Serial.print(vals[i], HEX);
-      Serial.println(((cmds[i] == READ_ACK ? " + ACK" : " + NAK")));
-      break;
-    case LPAUSE:
-    case PAUSE:
-      if (cmds[i] == PAUSE)
-	Serial.print(F("Microsecond delay"));
-      else
-	Serial.print(F("Millisecond delay"));
-      if (cmds[i+1] == LOOP) {
-	Serial.print(F(": "));
-	Serial.print(vals[i+1]);
-	Serial.print(F(" repetitions"));
-      }
-      Serial.println();
-      break;
-    case STOP: 
-      Serial.print(F("Stop condition"));
-      if (cmds[i+1] == LOOP) {
-	Serial.print(F(": "));
-	Serial.print(vals[i+1]);
-	Serial.print(F(" repetitions"));
-      }
-      Serial.println();
-      break;
-    case EOC:
-      return;
-      break;
+ byte readval;
+ int startline = 1;
+ int stopline = 0;
+ long val;
+ int ix = 1;
+ token_t token;
+ if (strlen(line) > 1) {
+   token = nextToken(line, ix, val);
+   if (token = NUM_TOK) {
+     startline = val;
+     stopline = startline + 19;
+   }
+ }
+ while (true) {
+   if (i >= startline && (i <= stopline || stopline == 0)) {
+     switch(cmds[i]) {
+     case START:
+       Serial.print(F("Start: "));
+       break;
+     case REPSTART:
+       Serial.print(F("Rep. start: "));
+       break;
+     case WSTART:
+       Serial.print(F("Start ("));
+       Serial.print(vals[i]);
+       Serial.print(F(" NAKs): "));
+       break;
+     case WREPSTART:
+       Serial.print(F("Rep. start ("));
+       Serial.print(vals[i]);
+       Serial.print(F(" NAKs): "));
+       break;
+     case WRITE_ACK:
+     case WRITE_NAK:
+       nostart = false;
+       if (i == 0 || (cmds[i-1] != START && cmds[i-1] != REPSTART && cmds[i-1] != WSTART && cmds[i-1] != WREPSTART)) {
+	 Serial.print(F("Write: "));
+	 nostart = true;
+       }
+       Serial.print(F("0x"));
+       if (vals[i] < 0x10) Serial.print(0);
+       Serial.print(vals[i], HEX);
+       if (!nostart) {
+	 Serial.print(F(" (0x"));
+	 if ((vals[i]>>1) < 0x10) Serial.print(0);
+	 Serial.print((vals[i]>>1), HEX);
+	 Serial.print(((vals[i])%2 == 0 ? "!" : "?"));
+	 Serial.print(F(")"));
+       }
+       Serial.println(((cmds[i] == WRITE_ACK ? " + ACK" : " + NAK")));
+       break;
+     case READ_ACK: 
+     case READ_NAK:
+       Serial.print(F("Read: 0x"));
+       if (vals[i] < 0x10) Serial.print(0);
+       Serial.print(vals[i], HEX);
+       Serial.println(((cmds[i] == READ_ACK ? " + ACK" : " + NAK")));
+       break;
+     case LPAUSE:
+     case PAUSE:
+       if (cmds[i] == PAUSE)
+	 Serial.print(F("msec delay"));
+       else
+	 Serial.print(F("\u03BC" "sec delay"));
+       if (cmds[i+1] == LOOP) {
+	 Serial.print(F(": "));
+	 Serial.print(vals[i+1]);
+	 Serial.print(F(" repetitions"));
+       }
+       Serial.println();
+       break;
+     case STOP: 
+       Serial.print(F("Stop"));
+       if (cmds[i+1] == LOOP) {
+	 Serial.print(F(": "));
+	 Serial.print(vals[i+1]);
+	 Serial.print(F(" repetitions"));
+       }
+       Serial.println();
+       break;
+     case EOC:
+       return;
+       break;
+     }
+   }
+   if (cmds[i++] == EOC) return;
+ }
+}
+
+/* ---------------------------- Shell commands ------------------------*/
+
+
+void storeMacro(int macnum, char *line)
+{
+  strncpy(macroline[macnum], &(line[2]), LINELEN+1);
+#if USEEEPROM
+  putMacrosEEPROM();
+#endif
+}
+
+
+void list(char index)
+{
+  byte i = index - '0';
+  if (i >= 0 && i < MACROS) {
+    Serial.print(i);
+    Serial.print(F("="));
+    Serial.println(macroline[i]);
+  } else {
+    for (i=0; i < MACROS; i++) {
+      Serial.print(i);
+      Serial.print(F("="));
+      Serial.println(macroline[i]);
     }
-    i++;
   }
 }
+    
+
+void help() {
+  Serial.println(F("\nI2C Shell Version " VERSION));
+  Serial.println(F(HELPSTRING));
+}
+
+
 
 void scan()
 {
@@ -795,28 +842,32 @@ void frequency(char *line)
     return;
   }
 #if I2C_HARDWARE
-  if (value < 1 || value > 400) {
-    Serial.println(F("Cannot set I2C clock frequency lower than 1 or higher than 400 kHz"));
+  if (value < 1 || value > 700) {
+    Serial.println(F("Cannot set I2C clock frequency lower than 1 or higher than 700 kHz"));
     return;
   }
   i2cfreq = value;
+  bitrate = (I2C_CPUFREQ/(value*1000UL)-16)/2;
+  if (bitrate < 3) {
+    Serial.println(F("Requested frequency is to high!"));
+    return;
+  }
   Serial.print(F("I2C clock frequency set to "));
   Serial.print(i2cfreq);
   Serial.println(F(" kHz"));
-  bitrate = (I2C_CPUFREQ/(value*1000UL)-16)/2;
-  if (bitrate >= 10 && bitrate <= 255) {
+  if (bitrate <= 255) {
     TWSR = 0;
     TWBR = bitrate;
     return;
   }
   bitrate = bitrate/4;
-  if (bitrate >= 10 && bitrate <= 255) {
+  if (bitrate <= 255) {
     TWSR = (1<<TWPS0);
     TWBR = bitrate;
     return;
   }
   bitrate = bitrate/4;
-  if (bitrate >= 10 && bitrate <= 255) {
+  if (bitrate <= 255) {
     bitrate = (I2C_CPUFREQ/(value*1000UL)-16)/32;
     TWSR = (1<<TWPS1);
     TWBR = bitrate;
@@ -830,6 +881,9 @@ void frequency(char *line)
   Serial.println(F("when you want to change the frequency dynamically"));
 #endif
 }
+
+/* ---------------------------- Macros in EEPROM ------------------------*/
+
 
 void getMacrosEEPROM()
 {
