@@ -21,9 +21,10 @@
  * - allowed now for 700 kHz as the maximum bus clock; works perfect, but
  *   you definitely need low pullup resistors, the internal ones won't 
  *   work at this speed.
+ * - some cleanup for the T command
  */
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define USEEEPROM 1
 #define I2C_HARDWARE 1
 
@@ -35,7 +36,7 @@
 
 #define HELPSTRING "Commands:\r\n" \
                    "H       - help                        S       - scan I2C bus\r\n" \
-                   "T       - print last exec trace       T<num>  - print 20 lines from line <num>\r\n"\
+                   "T       - print last exec trace       T<num>  - print 20 cmds starting at <num>\r\n"\
                    "L       - list macros                 L<dig>  - list <dig> macro\r\n" \
                    "P       - show status of pullups      P<dig>  - enable/disable(1/0) pullups\r\n" \
                    "F       - show current I2C frequency  F<num>  - set I2C frequency in kHz\r\n" \
@@ -656,7 +657,7 @@ void report(char *line, exec_t *cmds, byte *vals)
  int i = 0;
  bool ack, nostart;
  byte readval;
- int startline = 1;
+ int startline = 0;
  int stopline = 0;
  long val;
  int ix = 1;

@@ -265,7 +265,9 @@ you can type:
 
 This will address the I2C device under the (8-bit) address in write
 mode, set the reading register to 0, then opens the same device again
-in read mode and read 5 registers. 
+in read mode and read 5 registers. A complete documentation of this
+program can be found in the
+[I2CShell example folder](https://github.com/felias-fogg/SoftI2CMaster/tree/master/examples/I2CShell).
 
 ## Alternative Interface
 

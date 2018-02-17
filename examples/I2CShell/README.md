@@ -11,13 +11,13 @@ send 0x05 to the device. After that the device is again addressed
 with a repeated start in reading direction and 3 bytes are requested.
 The output could look like as follows:
 
-    Start cond.: 0x10 (0x08!) + ACK
-    Write byte: 0x05 + ACK
-    Rep. start cond.: 0x11 (0x08?) + ACK
-    Read byte: 0x10 + ACK
-    Read byte: 0x5A + ACK
-    Read byte: 0x98 + NAK
-    Stop condition
+    Start: 0x10 (0x08!) + ACK
+    Write: 0x05 + ACK
+    Rep. start: 0x11 (0x08?) + ACK
+    Read: 0x10 + ACK
+    Read: 0x5A + ACK
+    Read: 0x98 + NAK
+    Stop
 
 
 ## Installation and configuration
@@ -96,6 +96,8 @@ program in order to configure it and to access the I2C bus:
 * <code>S</code> scans the I2C bus for devices. Reports under which
   addresses the program receives an ACK.
 * <code>T</code> prints last execution trace again.
+* <code>T\<number\></code> prints 20 commands of the last execution trace
+  starting at command <number> (starting at command 0).
 * <code>\<digit\>=...</code> defines a macro under the single digit
   identifier \<digit\>. These macros can be used later inside I2C command
   strings. 
