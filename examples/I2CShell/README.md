@@ -97,7 +97,7 @@ program in order to configure it and to access the I2C bus:
   addresses the program receives an ACK.
 * <code>T</code> prints last execution trace again.
 * <code>T\<number\></code> prints 20 commands of the last execution trace
-  starting at command <number> (starting at command 0).
+  starting at command \<number\> (numbering starts at command 0).
 * <code>\<digit\>=...</code> defines a macro under the single digit
   identifier \<digit\>. These macros can be used later inside I2C command
   strings. 
