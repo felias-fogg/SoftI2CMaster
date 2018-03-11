@@ -58,6 +58,8 @@
  */
 
 /* Changelog:
+ * Version 2.1
+ * - added conditional to check whether it is the right MCU type
  * Version 2.0
  * - added hardware support as well.
  * Version 1.4:
@@ -74,14 +76,19 @@
  * - added I2C_TIMEOUT time in msec (0..10000) until timeout or 0 if no timeout
  * - changed i2c_init to return true iff both SDA and SCL are high
  * - changed interrupt disabling so that the previous IRQ state is restored
-d * Version 1.0: basic functionality
+ * Version 1.0: basic functionality
  */
-#include <avr/io.h>
-#include <Arduino.h>
-#include <util/twi.h>
+
+#ifndef __AVR_ARCH__
+#error "Not an AVR MCU! Use 'SlowSoftI2CMaster' library instead of 'SoftI2CMaster'!"
+#else
 
 #ifndef _SOFTI2C_H
 #define _SOFTI2C_H   1
+
+#include <avr/io.h>
+#include <Arduino.h>
+#include <util/twi.h>
 
 #pragma GCC diagnostic push
 
@@ -852,4 +859,4 @@ uint8_t i2c_read(bool last)
 #pragma GCC diagnostic pop
 
 #endif
-
+#endif

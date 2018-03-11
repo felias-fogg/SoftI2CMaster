@@ -1,12 +1,6 @@
 // -*-c++-*-
 // Scan I2C bus for device responses
 
-/*
-#define SDA_PORT PORTA
-#define SDA_PIN 1
-#define SCL_PORT PORTA
-#define SCL_PIN 2
-*/
 
 #define I2C_TIMEOUT 0
 #define I2C_NOINTERRUPT 0
@@ -15,19 +9,13 @@
 #define I2C_CPUFREQ (F_CPU/FAC)
 
 /* Corresponds to A4/A5 - the hardware I2C pins on Arduinos */
+/* Adjust to your own liking */
 #define SDA_PORT PORTC
 #define SDA_PIN 4
 #define SCL_PORT PORTC
 #define SCL_PIN 5
 #define I2C_FASTMODE 0
 
-
-/*
-#define SDA_PORT PORTC
-#define SDA_PIN 1
-#define SCL_PORT PORTC
-#define SCL_PIN 0
-*/
 
 #include <SoftI2CMaster.h>
 #include <avr/io.h>
