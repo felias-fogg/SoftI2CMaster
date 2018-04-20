@@ -134,12 +134,12 @@ public:
       rxBuffer[cnt] = i2c_read(cnt == quantity-1);
     // set rx buffer iterator vars
     rxBufferIndex = 0;
-    rxBufferLength = quantity;
+    rxBufferLength = localerror ? 0 : quantity;
     if (sendStop) {
       transmitting = 0;
       i2c_stop();
     }
-    return quantity;
+    return rxBufferLength;
   }
   
   uint8_t requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop) {
