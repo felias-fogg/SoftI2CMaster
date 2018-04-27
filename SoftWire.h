@@ -108,6 +108,7 @@ public:
 
   uint8_t requestFrom(uint8_t address, uint8_t quantity,
 		      uint32_t iaddress, uint8_t isize, uint8_t sendStop) {
+    error = 0;
     uint8_t localerror = 0;
     if (isize > 0) {
       // send internal address; this mode allows sending a repeated start to access
@@ -134,7 +135,7 @@ public:
       rxBuffer[cnt] = i2c_read(cnt == quantity-1);
     // set rx buffer iterator vars
     rxBufferIndex = 0;
-    rxBufferLength = localerror ? 0 : quantity;
+    rxBufferLength = error ? 0 : quantity;
     if (sendStop) {
       transmitting = 0;
       i2c_stop();
