@@ -24,7 +24,9 @@
 #include <inttypes.h>
 #include "Stream.h"
 
-#define BUFFER_LENGTH 32
+#ifndef I2C_BUFFER_LENGTH
+  #define I2C_BUFFER_LENGTH 32
+#endif
 
 // WIRE_HAS_END means Wire has end()
 #define WIRE_HAS_END 1
@@ -32,7 +34,7 @@
 class SoftWire : public Stream
 {
 private:
-  uint8_t rxBuffer[BUFFER_LENGTH];
+  uint8_t rxBuffer[I2C_BUFFER_LENGTH];
   uint8_t rxBufferIndex;
   uint8_t rxBufferLength;
   uint8_t transmitting;
@@ -124,8 +126,8 @@ public:
       endTransmission(false);
     }
     // clamp to buffer length
-    if(quantity > BUFFER_LENGTH){
-      quantity = BUFFER_LENGTH;
+    if(quantity > I2C_BUFFER_LENGTH){
+      quantity = I2C_BUFFER_LENGTH;
     }
     localerror = !i2c_rep_start((address<<1) | I2C_READ);
     if (error == 0 && localerror) error = 2;
