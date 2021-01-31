@@ -1,8 +1,8 @@
 /* Arduino SoftI2C library. 
  *
- * Version 1.4
+ * Version 2.1.2
  *
- * Copyright (C) 2013, Bernhard Nebel and Peter Fleury
+ * Copyright (C) 2013-2021, Bernhard Nebel and Peter Fleury
  *
  * This is a very fast and very light-weight software I2C-master library 
  * written in assembler. It is based on Peter Fleury's I2C software
@@ -135,7 +135,7 @@ uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 
 #if I2C_HARDWARE
 #ifndef TWDR
-#error This chip does not support hardware I2C. Please undfine I2C_HARDWARE
+#error This chip does not support hardware I2C. Please undefine I2C_HARDWARE
 #endif
 #endif
 

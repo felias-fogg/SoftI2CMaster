@@ -75,6 +75,7 @@ int readNextByte(void)
   c2 = Serial.read();
   if (c1 == 'X' && c2 == 'X') return -1;
   if (c1 == 'Z' && c2 == 'Z') return -2;
+b
   return convHex(c1,c2);
 }
 

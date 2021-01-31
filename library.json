@@ -1,0 +1,15 @@
+{
+  "name": "SoftI2CMaster",
+  "keywords": "communication, I2C",
+  "description": "Implements an I2C software and hardware interface",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/felias-fogg/SoftI2CMaster.git"
+  },
+  "frameworks": "arduino",
+  "platforms":
+  [
+    "atmelavr",
+  ]
+}

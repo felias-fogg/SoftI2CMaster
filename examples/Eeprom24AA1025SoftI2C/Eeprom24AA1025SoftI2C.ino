@@ -195,23 +195,22 @@ boolean performanceTest() {
 
 unsigned long parseHex() {
   unsigned long result = 0L;
-  char byte = '\0';
+  char inp = '\0';
+  byte val = 0;
 
-  //  while (hexdigit(byte)) {
-  while (byte != '\r' && byte != '#') {
+  while (inp != '\r' && inp != '#') {
     while (!Serial.available());
-    byte = Serial.read();
-    // if (!hexdigit(byte)) break;
-    if (byte == '\r' || byte == '#') break;
-    if (byte >= 'a' && byte <= 'f')
-      byte = byte -'a' + 'A';
-    if ((byte >= '0' && byte <= '9') ||
-	(byte >= 'A' && byte <= 'F')) {
-      Serial.print(byte);
-      if (byte >= '0' && byte <= '9') byte = byte - '0';
-      else byte = byte - 'A' + 10;
+    inp = Serial.read();
+    if (inp == '\r' || inp == '#') break;
+    if (inp >= 'a' && inp <= 'f')
+      inp = inp -'a' + 'A';
+    if ((inp >= '0' && inp <= '9') ||
+	(inp >= 'A' && inp <= 'F')) {
+      Serial.print(inp);
+      if (inp >= '0' && inp <= '9') val = inp - '0';
+      else val = inp - 'A' + 10;
       result = result * 16;
-      result = result + byte;
+      result = result + inp;
     }
   }
   Serial.println();
@@ -237,6 +236,7 @@ void setup(void) {
 #if I2C_CPUFREQ == (F_CPU/8)
   CPUSlowDown();
   Serial.begin(38400);
+
 #else
   Serial.begin(115200);
 #endif

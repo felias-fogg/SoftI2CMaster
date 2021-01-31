@@ -295,6 +295,11 @@ library, in particular its small footprint, but comes handy if you
 need a replacement of the original *Wire* library. The following section
 sketches the memory footprint of different I2C libraries.
 
+Instead of the SoftWire wrapper, one can use the alternative wrapper
+WireEmu. Include `SoftI2CMaster`in your main sketch. Then `WireEmu`can
+be used as a drop-in replacement for the Wire instance (also claiming
+to be an instance of TwoWire).
+
 ## Memory requirements
 
 In order to measure the memory requirements of the different

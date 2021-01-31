@@ -30,10 +30,10 @@
 // Devices with higher bit address might not be seen properly.
 //
 
-#define SDA_PORT PORTC
-#define SDA_PIN 4
+#define SDA_PORT PORTB
+#define SDA_PIN 2
 #define SCL_PORT PORTC
-#define SCL_PIN 5
+#define SCL_PIN 1
 
 #define I2C_TIMEOUT 100
 #define I2C_FASTMODE 1
@@ -46,7 +46,7 @@ void setup()
 {
   Wire.begin();
   
-  Serial.begin(115200);
+  Serial.begin(2400);
   while (!Serial);             // Leonardo: wait for serial monitor
   Serial.println("\nI2C Scanner");
 }
