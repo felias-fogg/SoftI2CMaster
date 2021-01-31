@@ -1,15 +1,12 @@
 {
   "name": "SoftI2CMaster",
-  "keywords": "communication, I2C",
-  "description": "Implements an I2C software and hardware interface",
-  "repository":
-  {
+  "keywords": "i2c",
+  "description": "Software I2C Arduino library",
+  "repository": {
     "type": "git",
     "url": "https://github.com/felias-fogg/SoftI2CMaster.git"
   },
+  "version": "2.1.2",
   "frameworks": "arduino",
-  "platforms":
-  [
-    "atmelavr",
-  ]
+  "platforms": "*"
 }
