@@ -210,7 +210,7 @@ unsigned long parseHex() {
       if (inp >= '0' && inp <= '9') val = inp - '0';
       else val = inp - 'A' + 10;
       result = result * 16;
-      result = result + inp;
+      result = result + val;
     }
   }
   Serial.println();
