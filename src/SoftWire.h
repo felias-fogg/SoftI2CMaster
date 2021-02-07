@@ -127,7 +127,10 @@ public:
     if(quantity > BUFFER_LENGTH){
       quantity = BUFFER_LENGTH;
     }
-    localerror = !i2c_rep_start((address<<1) | I2C_READ);
+    if (transmitting) 
+      localerror = !i2c_rep_start((address<<1) | I2C_READ);
+    else
+      localerror = !i2c_start((address<<1) | I2C_READ);
     if (error == 0 && localerror) error = 2;
     // perform blocking read into buffer
     for (uint8_t cnt=0; cnt < quantity; cnt++) 
