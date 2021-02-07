@@ -26,7 +26,7 @@
 
 #define VERSION "1.3"
 #define USEEEPROM 1
-#define I2C_HARDWARE 1
+#define I2C_HARDWARE 0
 
 
 #include <ctype.h>
@@ -114,7 +114,7 @@ bool i2cpullups = (I2C_PULLUP != 0);
 /* ---------------------------- Main program ------------------------*/
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(57600);
   Serial.println(F("\n\n\rI2C Shell Version " VERSION));
   if (!i2c_init()) {
     Serial.println(F("I2C bus is locked up or there are no pullups!"));
