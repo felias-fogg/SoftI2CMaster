@@ -49,7 +49,7 @@
  * - I2C_SLOWMODE = 1 meaning that the I2C bus will allow only up to 25 kHz 
  * - I2C_NOINTERRUPT = 1 in order to prohibit interrupts while 
  *   communicating (see below). This can be useful if you use the library 
- *   for communicationg with SMbus devices, which have timeouts.
+ *   for communicating with SMbus devices, which have timeouts.
  *   Note, however, that interrupts are disabled from issuing a start condition
  *   until issuing a stop condition. So use this option with care!
  * - I2C_TIMEOUT = 0..10000 msec in order to return from the I2C functions
@@ -74,7 +74,7 @@
  * Version 1.1: 
  * - removed I2C_CLOCK_STRETCHING
  * - added I2C_TIMEOUT time in msec (0..10000) until timeout or 0 if no timeout
- * - changed i2c_init to return true iff both SDA and SCL are high
+ * - changed i2c_init to return true if both SDA and SCL are high
  * - changed interrupt disabling so that the previous IRQ state is restored
  * Version 1.0: basic functionality
  */
@@ -128,7 +128,7 @@ bool __attribute__ ((noinline)) i2c_write(uint8_t value) asm("ass_i2c_write") __
 // the byte in order to terminate the read sequence. 
 uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 
-// If you want to use the TWI hardeware, you have to define I2C_HARDWARE to be 1
+// If you want to use the TWI hardware, you have to define I2C_HARDWARE to be 1
 #ifndef I2C_HARDWARE
 #define I2C_HARDWARE 0
 #endif
@@ -155,7 +155,7 @@ uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 // If I2C_FASTMODE is not defined or defined to be 0, then you can set
 // I2C_SLOWMODE to 1. In this case, the I2C frequency will not be higher 
 // than 25KHz. This could be useful for problematic buses with high pull-ups
-// and high capasitance.
+// and high capacitance.
 #ifndef I2C_SLOWMODE
 #define I2C_SLOWMODE 0
 #endif
@@ -168,7 +168,7 @@ uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 #define I2C_PULLUP 0
 #endif
 
-// if I2C_NOINTERRUPT is 1, then the I2C routines are not interruptable.
+// if I2C_NOINTERRUPT is 1, then the I2C routines are not interruptible.
 // This is most probably only necessary if you are using a 1MHz system clock,
 // you are communicating with a SMBus device, and you want to avoid timeouts.
 // Be aware that the interrupt bit is enabled after each call. So the
