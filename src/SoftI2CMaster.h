@@ -74,7 +74,7 @@
  * Version 1.1: 
  * - removed I2C_CLOCK_STRETCHING
  * - added I2C_TIMEOUT time in msec (0..10000) until timeout or 0 if no timeout
- * - changed i2c_init to return true if both SDA and SCL are high
+ * - changed i2c_init to return true if and only if both SDA and SCL are high
  * - changed interrupt disabling so that the previous IRQ state is restored
  * Version 1.0: basic functionality
  */
