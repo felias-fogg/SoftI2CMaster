@@ -1,11 +1,23 @@
 {
-  "name": "SoftI2CMaster",
-  "keywords": "i2c",
-  "description": "Software I2C Arduino library",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/felias-fogg/SoftI2CMaster.git"
-  },
-  "frameworks": "arduino",
-  "platforms": "*"
+    "name": "SoftI2CMaster",
+    "version": "2.1.5",
+    "keywords": "i2c",
+    "description": "Software I2C Arduino library",
+    "repository": {
+	"type": "git",
+	"url": "https://github.com/felias-fogg/SoftI2CMaster.git"
+    },
+    "authors": [
+	{
+	    "name": "Bernhard Nebel",
+	    "url": "http://hinterm-ziel.de/",
+	    "maintainer": true
+	},
+	{
+	    "name": "Peter Fleury",
+	    "url": "http://www.peterfleury.epizy.com/"
+	}
+    ],
+    "frameworks": "arduino",
+    "platforms": "Atmel AVR"
 }
