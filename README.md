@@ -7,6 +7,7 @@ The standard I2C library for the Arduino is the
 [Wire Library](http://arduino.cc/en/Reference/Wire). While this
 library is sufficient most of the time when you want to communicate
 with devices, there are situations when it is not applicable:
+
 * the I2C pins SDA/SCL are in use already for other purposes,
 * the code shall run on an ATtiny processor with 1 MHz on arbitrary pins,
 * you are short on memory (flash and RAM), or
@@ -14,7 +15,7 @@ with devices, there are situations when it is not applicable:
   because your devices are run with 3 volts.
 
 I adapted [Peter Fleury's I2C software
-library](http://homepage.hispeed.ch/peterfleury/avr-software.html)
+library](http://www.peterfleury.epizy.com/avr-software.html#libs)
 that is written in AVR assembler, extremely light weight (just under 500
 byte in flash) and very
 fast. Even on an ATtiny running with 1MHz, one can still operate the
@@ -30,6 +31,7 @@ bit-banging I2C library written in pure C++ could perhaps help you: [SlowSoftI2C
 ## Features
 
 This library has the following features:
+
 * supports only master mode
 * compatible with all 8-bit AVR MCUs
 * no bus arbitration (i.e., only one master allowed on bus)
@@ -110,14 +112,14 @@ scope that things work out.
     #define I2C_TIMEOUT ...
 Since slave devices can stretch the low period of the clock
 indefinitely, they can lock up the MCU. In order to avoid this, one
-can define <code>I2C_TIMEOUT</code>. Specify the number of
+can define <code>I2C\_TIMEOUT</code>. Specify the number of
 milliseconds after which the I2C functions will time out. Possible
 values are 0 (no time out) to 10000 (i.e., 10 seconds). Enabling this
 option slows done the bus speed somewhat.
 
     #define I2C_MAXWAIT ...
 When waiting for a busy device, one may use the function
-<code>i2c_start_wait(addr)</code> (see below), which sends start
+<code>i2c\_start\_wait(addr)</code> (see below), which sends start
 commands until the device responds with an <code>ACK</code>. If the
 value of this constant is different from 0, then it specifies the
 maximal number of start commands to be sent. Default value is 1000.
@@ -128,14 +130,14 @@ condition and terminating the transfer with a stop condition. Usually,
 this is not necessary. However, if you have an SMbus device that can
 timeout, one may want to use this feature. Note however, that in this
 case interrupts become unconditionally disabled when calling
-<code>i2c_start(...)</code> und unconditionally enabled after calling <code>i2c_stop()</code>.
+<code>i2c\_start(...)</code> und unconditionally enabled after calling <code>i2c\_stop()</code>.
 
     #define I2C_CPUFREQ ...
 If you are changing the CPU frequency dynamically using the clock
 prescale register CLKPR and intend to call the I2C functions with a
 frequency different from F_CPU, then define this constant with the
 correct frequency. For instance, if you used a prescale factor of 8,
-then the following definition would be adequate: <code>#define I2C_CPUFREQ (F_CPU/8)</code>
+then the following definition would be adequate: <code>#define I2C\_CPUFREQ (F\_CPU/8)</code>
 
     #define I2C_FASTMODE 1
 The *standard I2C bus frequency* is 100kHz. Often, however, devices permit for faster transfers up to 400kHz. If you want to allow for the higher frequency, then the above definition should be used.
@@ -143,13 +145,13 @@ The *standard I2C bus frequency* is 100kHz. Often, however, devices permit for f
     #define I2C_SLOWMODE 1
 In case you want to slow down the clock frequency to less than 25kHz, you can use this
 definition (in this case, do not define
-<code>I2C_FASTMODE</code>!). This can help to make the communication
+<code>I2C\_FASTMODE</code>!). This can help to make the communication
 more reliable.
 
 I have measured the maximal bus frequency under different processor
 speeds. The results are displayed in the following
-table. The left value is with <code>I2C_TIMEOUT</code> and
-<code>I2C_PULLUP</code> disabled. The right value is the bus
+table. The left value is with <code>I2C\_TIMEOUT</code> and
+<code>I2C\_PULLUP</code> disabled. The right value is the bus
 frequency with both options enabled. Note also that there is a high
 clock jitter (roughly 10-15%) because the clock is implemented by delay
 loops. This is not a problem for the I2C bus, though. However, the
@@ -191,21 +193,21 @@ Initiates a transfer to the slave device with the 8-bit I2C address
 *<code>addr</code>*. Note that this library uses the 8-bit addressing
 scheme different from the 7-bit scheme in the Wire library.
 In addition the least significant bit of *<code>addr</code>* must be specified as
-<code>I2C_WRITE</code> (=0) or <code>I2C_READ</code> (=1). Returns
+<code>I2C\_WRITE</code> (=0) or <code>I2C\_READ</code> (=1). Returns
 <code>true</code> if the addressed device replies with an
 <code>ACK</code>. Otherwise <code>false</code> is returned. 
 
     i2c_start_wait(addr)
-Similar to the <code>i2c_start</code> function. However, it tries
+Similar to the <code>i2c\_start</code> function. However, it tries
 repeatedly to start the transfer until the device sends an
-acknowledge. It will timeout after <code>I2C_MAXWAIT</code> failed
+acknowledge. It will timeout after <code>I2C\_MAXWAIT</code> failed
 attempts to contact the device (if this value is different from 0). By
 default, this value is 1000.
 
     i2c_rep_start(addr)
 Sends a repeated start condition, i.e., it starts a new transfer
 without sending first a stop condition. Same return value as
-<code>i2c_start()</code>. 
+<code>i2c\_start()</code>. 
 
     i2c_stop()
 Sends a stop condition and thereby releases the bus. No return value.
