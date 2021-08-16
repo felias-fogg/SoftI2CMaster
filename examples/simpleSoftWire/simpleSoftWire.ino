@@ -1,6 +1,8 @@
 // -*- c++ -*-
 // Simple sketch to read out one register of an I2C device
 
+#define I2C_TIMEOUT 1000
+#define I2C_PULLUP 1
 #define SDA_PORT PORTC
 #define SDA_PIN 4 // = A4
 #define SCL_PORT PORTC

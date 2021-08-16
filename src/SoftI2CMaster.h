@@ -1,6 +1,6 @@
 /* Arduino SoftI2C library. 
  *
- * Version 2.1.2
+ * Version 2.1.6
  *
  * Copyright (C) 2013-2021, Bernhard Nebel and Peter Fleury
  *
@@ -58,6 +58,14 @@
  */
 
 /* Changelog:
+ * Version 2.1.6 
+ * - adapted SlowSoftWire to make it comparable to SlowSoftI2C (and a few other minor things)
+ * Version 2.1.5
+ * - replaced all rcalls and rjmps by calls and jmps
+ * Version 2.1.4
+ * - fixed bug in Softwire conerning repeated starts
+ * Version 2.1.3
+ * - removed WireEmu and fixed bug in Eeprom24AA1025SoftI2C.ino
  * Version 2.1
  * - added conditional to check whether it is the right MCU type
  * Version 2.0
