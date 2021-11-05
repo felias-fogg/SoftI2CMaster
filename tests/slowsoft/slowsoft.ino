@@ -10,7 +10,7 @@
 #define MEMLEN 10 // the number of bytes to be written and to be read
 #define LEDPIN 1 // LED to report result
 
-#include <SlowSoftI2CMaster.h>
+#include "SlowSoftI2CMaster.h"
 
 SlowSoftI2CMaster si = SlowSoftI2CMaster(4, 5, true);
 

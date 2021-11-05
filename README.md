@@ -302,6 +302,18 @@ WireEmu. Include `SoftI2CMaster`in your main sketch. Then `WireEmu`can
 be used as a drop-in replacement for the Wire instance (also claiming
 to be an instance of TwoWire).
 
+There are a few constants that you can define in order to
+control the behavior of the library. You have to specify them before
+the <code>include</code> statement so that they can take effect. Note
+that this different from the usual form of libraries! This library is
+always compiled with your sketch and therefore the <code>defines</code>
+need to be specfied before the inclusion of the library!
+
+    #define I2C_RX_BUFFER_LENGTH 48
+The default buffer length is 32 byte like in the standard Arduino Wire or twi library.
+But if some I2C device send more then 32 byte, you can use this definition to increase 
+the receiver buffer size.
+
 ## Memory requirements
 
 In order to measure the memory requirements of the different
