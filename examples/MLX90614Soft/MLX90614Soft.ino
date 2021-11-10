@@ -1,13 +1,22 @@
 // reads out the MLX90614 infrared thermometer
 
 #include <Arduino.h>
-#define SDA_PORT PORTD
-#define SDA_PIN 3
-#define SCL_PORT PORTD
+#ifdef __AVR_ATmega328P__
+/* Corresponds to A4/A5 - the hardware I2C pins on Arduinos */
+#define SDA_PORT PORTC
+#define SDA_PIN 4
+#define SCL_PORT PORTC
 #define SCL_PIN 5
+#define I2C_FASTMODE 1
+#else
+#define SDA_PORT PORTB
+#define SDA_PIN 0
+#define SCL_PORT PORTB
+#define SCL_PIN 2
+#define I2C_FASTMODE 1
+#endif
+
 #include <SoftI2CMaster.h>
-
-
 
 void setup(){
 #if (__AVR_ARCH__  == 5) // means ATMEGA 

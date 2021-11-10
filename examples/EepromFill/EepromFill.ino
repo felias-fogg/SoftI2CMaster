@@ -3,10 +3,21 @@
 // Receivebytes stores these chunks in EEPROM and stores in the first
 // 256 bytes a table of 64 (unsigned long) addresses to these chunks.
 
-#define SDA_PORT PORTD
-#define SDA_PIN 3
-#define SCL_PORT PORTD
+#ifdef __AVR_ATmega328P__
+/* Corresponds to A4/A5 - the hardware I2C pins on Arduinos */
+#define SDA_PORT PORTC
+#define SDA_PIN 4
+#define SCL_PORT PORTC
 #define SCL_PIN 5
+#define I2C_FASTMODE 1
+#else
+#define SDA_PORT PORTB
+#define SDA_PIN 0
+#define SCL_PORT PORTB
+#define SCL_PIN 2
+#define I2C_FASTMODE 1
+#endif
+
 #define I2C_FASTMODE 1
 // #define I2C_TIMEOUT 10 // timeout after 10 msec
 // #define I1C_NOINTERRUPT 1 // no interrupts
@@ -75,7 +86,7 @@ int readNextByte(void)
   c2 = Serial.read();
   if (c1 == 'X' && c2 == 'X') return -1;
   if (c1 == 'Z' && c2 == 'Z') return -2;
-b
+
   return convHex(c1,c2);
 }
 
