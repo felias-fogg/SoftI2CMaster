@@ -88,7 +88,7 @@ SCL and *port pin 0 of PORTC* for SDA:
 There are a few other constants that you can define in order to
 control the behavior of the library. You have to specify them before
 the <code>include</code> statement so that they can take effect. Note
-that this different from the usual form of libraries! This library is
+that this is different from the usual form of using libraries! This library is
 always compiled with your sketch and therefore the <code>defines</code>
 need to be specfied before the inclusion of the library!
 
