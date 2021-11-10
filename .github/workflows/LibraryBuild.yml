@@ -49,15 +49,15 @@ jobs:
         include:
           - arduino-boards-fqbn: digistump:avr:digispark-tiny:clock=clock1  # ATtiny85 board @1 MHz
             platform-url: https://raw.githubusercontent.com/ArminJo/DigistumpArduino/master/package_digistump_index.json
-            sketches-exclude: hardi2c,stretchTest,I2Cshell,EepromFill
+            sketches-exclude: hardi2c,stretchTest,I2CShell,EepromFill
 
           - arduino-boards-fqbn: digistump:avr:digispark-pro
             platform-url: https://raw.githubusercontent.com/ArminJo/DigistumpArduino/master/package_digistump_index.json
-            sketches-exclude: hardi2c,stretchTest,I2Cshell
+            sketches-exclude: hardi2c,stretchTest,I2CShell
 
           - arduino-boards-fqbn: ATTinyCore:avr:attinyx5:chip=85,clock=1internal
             platform-url: http://drazzy.com/package_drazzy.com_index.json
-            sketches-exclude: hardi2c,stretchTest,I2Cshell
+            sketches-exclude: hardi2c,stretchTest,I2CShell
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
