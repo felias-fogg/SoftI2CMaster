@@ -8,12 +8,21 @@
 #define FAC 1
 #define I2C_CPUFREQ (F_CPU/FAC)
 
-/* Corresponds to A4/A5 - the hardware I2C pins on Arduinos */
 /* Adjust to your own liking */
+#ifdef __AVR_ATmega328P__
+/* Corresponds to A4/A5 - the hardware I2C pins on Arduinos */
 #define SDA_PORT PORTC
 #define SDA_PIN 4
 #define SCL_PORT PORTC
 #define SCL_PIN 5
+#define I2C_FASTMODE 1
+#else
+#define SDA_PORT PORTB
+#define SDA_PIN 0
+#define SCL_PORT PORTB
+#define SCL_PIN 2
+#define I2C_FASTMODE 1
+#endif
 #define I2C_FASTMODE 0
 
 

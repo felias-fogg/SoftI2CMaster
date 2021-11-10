@@ -2,6 +2,8 @@
   SoftWire.h - A Wire compatible wrapper for SoftI2CMaster
   Copyright (c) 2016 Bernhard Nebel.
 
+  This file is part of SoftI2CMaster https://github.com/felias-fogg/SoftI2CMaster.
+
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -46,10 +48,10 @@ public:
     rxBufferLength = 0;
     error = 0;
     transmitting = false;
-    
+
     i2c_init();
   }
-  
+
   void end(void) {
   }
 
@@ -65,7 +67,7 @@ public:
     // indicate that we are transmitting
     transmitting = 1;
   }
-  
+
   void beginTransmission(int address) {
     beginTransmission((uint8_t)address);
   }
@@ -127,13 +129,13 @@ public:
     if(quantity > BUFFER_LENGTH){
       quantity = BUFFER_LENGTH;
     }
-    if (transmitting) 
+    if (transmitting)
       localerror = !i2c_rep_start((address<<1) | I2C_READ);
     else
       localerror = !i2c_start((address<<1) | I2C_READ);
     if (error == 0 && localerror) error = 2;
     // perform blocking read into buffer
-    for (uint8_t cnt=0; cnt < quantity; cnt++) 
+    for (uint8_t cnt=0; cnt < quantity; cnt++)
       rxBuffer[cnt] = i2c_read(cnt == quantity-1);
     // set rx buffer iterator vars
     rxBufferIndex = 0;
@@ -144,7 +146,7 @@ public:
     }
     return quantity;
   }
-  
+
   uint8_t requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop) {
 	return requestFrom((uint8_t)address, (uint8_t)quantity, (uint32_t)0, (uint8_t)0, (uint8_t)sendStop);
   }
@@ -177,7 +179,7 @@ public:
 
   int peek(void) {
     int value = -1;
-    
+
     if(rxBufferIndex < rxBufferLength){
       value = rxBuffer[rxBufferIndex];
     }
@@ -188,7 +190,7 @@ public:
   }
 
   inline size_t write(unsigned long n) { return write((uint8_t)n); }
-  
+
   inline size_t write(long n) { return write((uint8_t)n); }
 
   inline size_t write(unsigned int n) { return write((uint8_t)n); }
