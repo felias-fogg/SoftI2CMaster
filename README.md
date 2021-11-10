@@ -148,6 +148,9 @@ definition (in this case, do not define
 <code>I2C\_FASTMODE</code>!). This can help to make the communication
 more reliable.
 
+    #define I2C_BUFFER_LENGTH 32
+Some I2C device rx data more then 32 byte, you can use this definition and increase value.
+
 I have measured the maximal bus frequency under different processor
 speeds. The results are displayed in the following
 table. The left value is with <code>I2C\_TIMEOUT</code> and
@@ -297,11 +300,6 @@ library, in particular its small footprint, but comes handy if you
 need a replacement of the original *Wire* library. The following section
 sketches the memory footprint of different I2C libraries.
 
-Instead of the SoftWire wrapper, one can use the alternative wrapper
-WireEmu. Include `SoftI2CMaster`in your main sketch. Then `WireEmu`can
-be used as a drop-in replacement for the Wire instance (also claiming
-to be an instance of TwoWire).
-
 There are a few constants that you can define in order to
 control the behavior of the library. You have to specify them before
 the <code>include</code> statement so that they can take effect. Note
@@ -310,8 +308,8 @@ always compiled with your sketch and therefore the <code>defines</code>
 need to be specfied before the inclusion of the library!
 
     #define I2C_RX_BUFFER_LENGTH 48
-The default buffer length is 32 byte like in the standard Arduino Wire or twi library.
-But if some I2C device send more then 32 byte, you can use this definition to increase 
+The default buffer length is 32 byte like in the standard Arduino Wire or TWI library.
+But if some I2C device sends more then 32 byte, you can use this definition to increase 
 the receiver buffer size.
 
 ## Memory requirements
