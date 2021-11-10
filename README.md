@@ -148,6 +148,9 @@ definition (in this case, do not define
 <code>I2C\_FASTMODE</code>!). This can help to make the communication
 more reliable.
 
+    #define I2C_BUFFER_LENGTH 32
+Some I2C device rx data more then 32 byte, you can use this definition and increase value.
+
 I have measured the maximal bus frequency under different processor
 speeds. The results are displayed in the following
 table. The left value is with <code>I2C\_TIMEOUT</code> and
