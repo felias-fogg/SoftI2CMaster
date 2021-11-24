@@ -15,9 +15,7 @@
 #define SDA_PIN 4 
 #define SCL_PORT PORTB
 #define SCL_PIN 5 
-#include <SoftWire.h>
-
-SoftWire Wire = SoftWire();
+#include <SoftWire.hpp>
 
 void setup() {
   pinMode(LEDPIN, OUTPUT);

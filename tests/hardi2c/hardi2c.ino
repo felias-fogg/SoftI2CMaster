@@ -11,7 +11,7 @@
 #define LEDPIN 1 // LED to report result
 
 #define I2C_HARDWARE 1
-#include <SoftI2CMaster.h>
+#include <SoftI2CMaster.hpp>
 
 void setup() {
   pinMode(LEDPIN, OUTPUT);

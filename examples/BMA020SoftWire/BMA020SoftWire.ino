@@ -21,11 +21,9 @@
 #define I2C_TIMEOUT 100
 //#define I2C_FASTMODE 1
 
-#include <SoftWire.h>
+#include <SoftWire.hpp>
 #include <avr/io.h>
 
-
-SoftWire Wire = SoftWire();
 
 #define BMAADDR 0x38
 

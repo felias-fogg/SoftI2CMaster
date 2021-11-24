@@ -48,10 +48,8 @@
 #define I2C_TIMEOUT 100
 #define I2C_FASTMODE 1
      
-#include <SoftWire.h>
+#include <SoftWire.hpp>
 
-SoftWire Wire = SoftWire();
-     
 void setup()
 {
   Wire.begin();

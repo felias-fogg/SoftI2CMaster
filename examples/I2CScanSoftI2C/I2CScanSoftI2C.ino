@@ -26,7 +26,7 @@
 #define I2C_FASTMODE 0
 
 
-#include <SoftI2CMaster.h>
+#include <SoftI2CMaster.hpp>
 #include <avr/io.h>
 
 //------------------------------------------------------------------------------

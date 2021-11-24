@@ -19,13 +19,11 @@
 #define I2C_FASTMODE 1
 #endif
 
-#include <SoftWire.h>
+#include <SoftWire.hpp>
 
 #define I2C_7BITADDR 0x68 // DS1307
 #define MEMLOC 0x0A
 #define ADDRLEN 1
-
-SoftWire Wire = SoftWire();
 
 void setup(void) {
   Serial.begin(57600);

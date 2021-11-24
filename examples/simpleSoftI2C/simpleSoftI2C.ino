@@ -18,7 +18,7 @@
 #define I2C_FASTMODE 1
 #endif
 
-#include <SoftI2CMaster.h>
+#include <SoftI2CMaster.hpp>
 
 #define I2C_7BITADDR 0x68 // DS1307
 #define MEMLOC 0x0A

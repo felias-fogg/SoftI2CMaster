@@ -16,7 +16,7 @@
 #define I2C_FASTMODE 1
 #endif
 
-#include <SoftI2CMaster.h>
+#include <SoftI2CMaster.hpp>
 
 void setup(){
 #if (__AVR_ARCH__  == 5) // means ATMEGA 
