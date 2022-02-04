@@ -17,7 +17,7 @@
 #define SCL_PORT PORTB
 #define SCL_PIN 5 // = A5
 
-#include <SoftI2CMaster.hpp>
+#include <SoftI2CMaster.h>
 
 void setup() {
   pinMode(LEDPIN, OUTPUT);

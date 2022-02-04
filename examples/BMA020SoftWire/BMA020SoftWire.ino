@@ -21,7 +21,7 @@
 #define I2C_TIMEOUT 100
 //#define I2C_FASTMODE 1
 
-#include <SoftWire.hpp>
+#include <SoftWire.h>
 #include <avr/io.h>
 
 

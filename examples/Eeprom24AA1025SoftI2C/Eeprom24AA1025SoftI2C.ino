@@ -21,7 +21,7 @@
 //#define I2C_TIMEOUT 10 // timeout after 10 msec
 //#define I1C_NOINTERRUPT 1 // no interrupts
 //#define I2C_CPUFREQ (F_CPU/8) // slow down CPU frequency
-#include <SoftI2CMaster.hpp>
+#include <SoftI2CMaster.h>
 
 #define EEPROMADDR 0xA6 // set by jumper (A0 and A1 = High)
 #define MAXADDR 0x1FFFF
