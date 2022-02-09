@@ -1,6 +1,6 @@
 /* Arduino SoftI2C library.
  *
- * Version 2.1.7
+ * Version 2.1.8
  *
  * Copyright (C) 2013-2021, Bernhard Nebel and Peter Fleury
  *
