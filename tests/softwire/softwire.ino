@@ -17,8 +17,6 @@
 #define SCL_PIN 5 
 #include <SoftWire.h>
 
-SoftWire Wire = SoftWire();
-
 void setup() {
   pinMode(LEDPIN, OUTPUT);
   digitalWrite(LEDPIN, HIGH);

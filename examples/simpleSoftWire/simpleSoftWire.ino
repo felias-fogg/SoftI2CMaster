@@ -25,8 +25,6 @@
 #define MEMLOC 0x0A
 #define ADDRLEN 1
 
-SoftWire Wire = SoftWire();
-
 void setup(void) {
   Serial.begin(57600);
   Wire.begin();

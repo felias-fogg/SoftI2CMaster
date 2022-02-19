@@ -1,6 +1,6 @@
 {
     "name": "SoftI2CMaster",
-    "version": "2.1.7",
+    "version": "2.1.8",
     "keywords": "i2c",
     "description": "Software I2C Arduino library",
     "repository": {

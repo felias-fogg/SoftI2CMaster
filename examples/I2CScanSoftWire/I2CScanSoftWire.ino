@@ -50,8 +50,6 @@
      
 #include <SoftWire.h>
 
-SoftWire Wire = SoftWire();
-     
 void setup()
 {
   Wire.begin();

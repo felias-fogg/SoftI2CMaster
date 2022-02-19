@@ -25,8 +25,6 @@
 #include <avr/io.h>
 
 
-SoftWire Wire = SoftWire();
-
 #define BMAADDR 0x38
 
 int xval, yval, zval;

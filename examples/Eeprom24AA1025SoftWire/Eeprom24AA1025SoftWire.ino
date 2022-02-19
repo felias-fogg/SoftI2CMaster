@@ -21,8 +21,6 @@
 // #define I2C_CPUFREQ (F_CPU/8) // slow down CPU frequency
 #include <SoftWire.h>
 
-SoftWire Wire = SoftWire();
-
 #define EEPROMADDR 0xA6 // set by jumper (A0 and A1 = High)
 #define MAXADDR 0x1FFFF
 #define MAXTESTADDR 0x003FF
