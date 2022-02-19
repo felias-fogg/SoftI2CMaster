@@ -9,29 +9,18 @@
 ## Why another I2C library?
 
 The standard I2C library for the Arduino is the
-[Wire Library](http://arduino.cc/en/Reference/Wire). While this
-library is sufficient most of the time when you want to communicate
+[Wire Library](http://arduino.cc/en/Reference/Wire). While this library is sufficient most of the time when you want to communicate
 with devices, there are situations when it is not applicable:
 
 * the I2C pins SDA/SCL are in use already for other purposes,
 * the code shall run on an ATtiny processor with 1 MHz on arbitrary pins,
 * you are short on memory (flash and RAM), or
-* you do not want to use the implicitly enabled pull-up resistors
-  because your devices are run with 3 volts.
+* you do not want to use the implicitly enabled pull-up resistors because your devices are run with 3.3 volts.
 
-I adapted [Peter Fleury's I2C software
-library](http://www.peterfleury.epizy.com/avr-software.html#libs)
-that is written in AVR assembler, extremely light weight (just under 500
-byte in flash) and very
-fast. Even on an ATtiny running with 1MHz, one can still operate the
-bus with 33 kHz, which implies that you can drive slave devices that
-use the SMBus protocol (which timeout if the the bus frequency is
-below 10 kHz).
+I adapted [Peter Fleury's I2C software library](http://www.peterfleury.epizy.com/avr-software.html#libs) that is written in AVR assembler, extremely light weight (just under 500 byte in flash) and very fast. Even on an ATtiny running with 1MHz, one can still operate the
+bus with 33 kHz, which implies that you can drive slave devices that use the SMBus protocol (which timeout if the the bus frequency is below 10 kHz).
 
-If you want a solution running on an ARM MCU (Due, Zero, Teensy 3.x), you want to use pins
-on port H or above on an ATmega256, or you want to use many different I2C buses,
-this library is not the right solution for you. In these cases, another
-bit-banging I2C library written in pure C++ could perhaps help you: [SlowSoftI2CMaster](https://github.com/felias-fogg/SlowSoftI2CMaster).
+If you want a solution running on an ARM MCU (Due, Zero, Teensy 3.x), you want to use pins on port H or above on an ATmega256, or you want to use many different I2C buses, this library is not the right solution for you. In these cases, another bit-banging I2C library written in pure C++ could perhaps help you: [SlowSoftI2CMaster](https://github.com/felias-fogg/SlowSoftI2CMaster).
 
 ## Features
 
@@ -49,17 +38,16 @@ This library has the following features:
 * it is not interrupt-driven
 * very fast (standard and fast mode on ATmega328, 33 kHz on ATtiny
 with 1 MHz CPU clock)
+* can be easily used in multi-file projects (new)
 * Optional <code>Wire</code> library compatible interface
 * GPL license
 
 
 ## Installation
 
-Just download the
-[Zip-File from github](https://github.com/felias-fogg/SoftI2CMaster),
-uncompress, rename the directory to <code>SoftI2CMaster</code> and move it into
-the <code>libraries</code> folder. In case you have not installed a library
-before, consult the the respective [help page](http://arduino.cc/en/Guide/Libraries).
+The simplest way to install this library is to use the [library manager](https://docs.arduino.cc/software/ide-v1/tutorials/installing-libraries). Alternatively, one can download the
+[zip file from GitHub](https://github.com/felias-fogg/SoftI2CMaster), uncompress, rename the directory to <code>SoftI2CMaster</code> and move it into
+the <code>libraries</code> folder. 
 
 ## Importing the library
 
@@ -68,18 +56,8 @@ statement:
 
     #include <SoftI2CMaster.h>
 
-In the program text *before* the include statement, some compile-time
-parameters have to be specified, such as which pins are used for the
-data (SDA) and clock (SCL) lines. These pins have to be specified in a
-way so that
-[port manipulation commands](http://www.arduino.cc/en/Reference/PortManipulation)
-can be used. Instead of specifying the number of the digital pin
-(0-19), the *port* (PORTB, PORTC, PORTD) and the *port pin* has to be
-specified. The mapping is explained
-[here](http://www.arduino.cc/en/Reference/PortManipulation). For
-example, if you want to use *digital pin 2* for *SCL* and *digital pin 14*
-(= analog pin 0) for *SDA*, you have to specify *port pin 2 of PORTD* for
-SCL and *port pin 0 of PORTC* for SDA:
+In the program text *before* the include statement, some compile-time parameters have to be specified, such as which pins are used for the data (SDA) and clock (SCL) lines. These pins have to be specified in a way so that[port manipulation commands](https://create.arduino.cc/projecthub/Hack-star-Arduino/learn-arduino-port-manipulation-2022-10f9af)
+can be used. Instead of specifying the number of the digital pin (0-19), the *port* (PORTB, PORTC, PORTD) and the *port pin* has to be specified. The mapping is explained [here](https://create.arduino.cc/projecthub/Hack-star-Arduino/learn-arduino-port-manipulation-2022-10f9af). For example, if you want to use *digital pin 2* for *SCL* and *digital pin 14* (= analog pin 0) for *SDA*, you have to specify *port pin 2 of PORTD* for SCL and *port pin 0 of PORTC* for SDA:
 
     #define SCL_PIN 2
     #define SCL_PORT PORTD
@@ -87,6 +65,15 @@ SCL and *port pin 0 of PORTC* for SDA:
     #define SDA_PORT PORTC
     #include <SoftI2CMaster.h>
 
+## Using the library in multi-file projects
+
+If you want to use the library in a larger project consisting of multiple cpp files, then you may wonder how the library should be imported. Since the header file contains all the source code, importing the library in more than one source file will lead to linkage errors. In order to support the usage of the library in such a context, ArminJo came up with the solution of using another compile time constant that controls of whether only the function declarations are imported. If you put the following compile time constant definition before the `#include` directive
+
+```c++
+#define USE_SOFT_I2C_MASTER_H_AS_PLAIN_INCLUDE
+```
+
+then only the function declarations are included. In other words, in such a large project, you once include the header file without this definition and all the other times, you have to put the above definition before the #include directive.
 
 ## Configuration
 
@@ -241,16 +228,16 @@ device, with an address space < 256 (i.e. one byte for addressing)
 	#define SCL_PORT PORTC
 	#define SCL_PIN 5 // = A5
 	#include <SoftI2CMaster.h>
-
+	
 	#define I2C_7BITADDR 0x68 // DS1307
 	#define MEMLOC 0x0A 
-
+	
 	void setup(void) {
 	    Serial.begin(57600);
 	    if (!i2c_init()) // Initialize everything and check for bus lockup
-            Serial.println("I2C init failed");
+	        Serial.println("I2C init failed");
 	}
-
+	
 	void loop(void){
 	    if (!i2c_start((I2C_7BITADDR<<1)|I2C_WRITE)) { // start transfer
 	        Serial.println("I2C device busy");
@@ -282,13 +269,8 @@ program can be found in the
 ## Alternative Interface
 
 Meanwhile, I have written a wrapper around SoftI2CMaster that emulates
-the [Wire library](http://arduino.cc/en/Reference/Wire)
-(master mode 
-only). It is another C++-header file called <code>SoftWire.h</code>,
-which you need to include instead of
-<code>SoftI2CMaster.h</code>. The ports and pins have to be specified
-as described above. After the include statement you need to
-create a <code>SoftWire</code> instance:
+the [Wire library](http://arduino.cc/en/Reference/Wire) (master mode only). It is another C++-header file called <code>SoftWire.h</code>,
+which you need to include instead of <code>SoftI2CMaster.h</code>. The ports and pins have to be specified as described above. After the include statement you need to create a <code>SoftWire</code> instance:
 
     #define SDA_PORT ...
     ...
@@ -316,6 +298,14 @@ need to be specfied before the inclusion of the library!
 The default buffer length is 32 byte like in the standard Arduino Wire or TWI library.
 But if some I2C device sends more then 32 byte, you can use this definition to increase 
 the receiver buffer size.
+
+Finally, you can use this wrapper library in multi-file projects. By putting the following directive 
+
+```
+#define USE_SOFTWIRE_H_AS_PLAIN_INCLUDE
+```
+
+before including the library, only the declaration part is included. 
 
 ## Memory requirements
 
@@ -391,16 +381,11 @@ align="center">-</td></tr>
 
 ## Shortcomings
 
-The entire code had to be included in the header file, because the communication ports in the code need to be determined at compile time. This implies that this header file should only be included once per project (usually in the sketch). 
+One shortcoming is that one cannot use port H and above on an ATmega256. The reason is that these ports are not addressable as I/O registers. 
 
-Another shortcoming is that one cannot use ports H and above on an ATmega256. The reason is that these ports are not directly addressable. 
-
-Finally, as mentioned, the code runs only on AVR MCUs (because it uses
+Another shortcoming is, as mentioned, that the code runs only on AVR MCUs (because it uses
 assembler). If you want to use a software I2C library on the ARM
-platform, you could use
-https://github.com/felias-fogg/SlowSoftI2CMaster, which uses only C++
-code. Because of this, it is much slower, but on a Genuino/Arduino
-Zero, the I2C bus runs with roughly 100kHz. There is also a Wire-like wrapper available for this library: https://github.com/felias-fogg/SlowSoftWire.
+platform, you could use https://github.com/felias-fogg/SlowSoftI2CMaster, which uses only C++ code. Because of this, it is much slower, but on a Genuino/Arduino Zero, the I2C bus runs with roughly 100kHz. There is also a Wire-like wrapper available for this library: https://github.com/felias-fogg/SlowSoftWire.
 
 
 
