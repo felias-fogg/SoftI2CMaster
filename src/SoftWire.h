@@ -159,6 +159,7 @@ extern SoftWire Wire;
 
   uint8_t SoftWire::requestFrom(uint8_t address, uint8_t quantity,
               uint32_t iaddress, uint8_t isize, uint8_t sendStop) {
+    error = 0;
     uint8_t localerror = 0;
     if (isize > 0) {
       // send internal address; this mode allows sending a repeated start to access
@@ -191,12 +192,12 @@ extern SoftWire Wire;
     }
     // set rx buffer iterator vars
     rxBufferIndex = 0;
-    rxBufferLength = quantity;
+    rxBufferLength = error ? 0 : quantity;
     if (sendStop) {
       transmitting = 0;
       i2c_stop();
     }
-    return quantity;
+    return rxBufferLength;
   }
 
   uint8_t SoftWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop) {
