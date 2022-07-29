@@ -56,7 +56,7 @@ statement:
 
     #include <SoftI2CMaster.h>
 
-In the program text *before* the include statement, some compile-time parameters have to be specified, such as which pins are used for the data (SDA) and clock (SCL) lines. These pins have to be specified in a way so that[port manipulation commands](https://create.arduino.cc/projecthub/Hack-star-Arduino/learn-arduino-port-manipulation-2022-10f9af)
+In the program text *before* the include statement, some compile-time parameters have to be specified, such as which pins are used for the data (SDA) and clock (SCL) lines. These pins have to be specified in a way so that [port manipulation commands](https://create.arduino.cc/projecthub/Hack-star-Arduino/learn-arduino-port-manipulation-2022-10f9af)
 can be used. Instead of specifying the number of the digital pin (0-19), the *port* (PORTB, PORTC, PORTD) and the *port pin* has to be specified. The mapping is explained [here](https://create.arduino.cc/projecthub/Hack-star-Arduino/learn-arduino-port-manipulation-2022-10f9af). For example, if you want to use *digital pin 2* for *SCL* and *digital pin 14* (= analog pin 0) for *SDA*, you have to specify *port pin 2 of PORTD* for SCL and *port pin 0 of PORTC* for SDA:
 
     #define SCL_PIN 2
@@ -82,7 +82,7 @@ control the behavior of the library. You have to specify them before
 the <code>include</code> statement so that they can take effect. Note
 that this is different from the usual form of using libraries! This library is
 always compiled with your sketch and therefore the <code>defines</code>
-need to be specfied before the inclusion of the library!
+need to be specified before the inclusion of the library!
 
     #define I2C_HARDWARE 1
 Although this is basically a bit-banging library, there is the
@@ -92,7 +92,7 @@ set to 1, then the hardware registers are used (and you have to
 use the standard SDA and SCL pins).
 
     #define I2C_PULLUP 1
-With this definition you enable the internal pullup resistores of the
+With this definition you enable the internal pullup resistors of the
 MCU. Note that the internal pullups have around 50k&#x2126;, which may be
 too high. This slows down the bus speed somewhat.
 Furthermore, when switching from <code>HIGH</code> to
@@ -126,7 +126,7 @@ case interrupts become unconditionally disabled when calling
 
     #define I2C_CPUFREQ ...
 If you are changing the CPU frequency dynamically using the clock
-prescale register CLKPR and intend to call the I2C functions with a
+prescaler register CLKPR and intend to call the I2C functions with a
 frequency different from F_CPU, then define this constant with the
 correct frequency. For instance, if you used a prescale factor of 8,
 then the following definition would be adequate: <code>#define I2C\_CPUFREQ (F\_CPU/8)</code>
@@ -140,14 +140,11 @@ definition (in this case, do not define
 <code>I2C\_FASTMODE</code>!). This can help to make the communication
 more reliable.
 
-    #define I2C_BUFFER_LENGTH 32
-Some I2C device rx data more then 32 byte, you can use this definition and increase value.
-
 I have measured the maximal bus frequency under different processor
 speeds. The results are displayed in the following
 table. The left value is with <code>I2C\_TIMEOUT</code> and
 <code>I2C\_PULLUP</code> disabled. The right value is the bus
-frequency with both options enabled. Note also that there is a high
+frequency with both options enabled. Note that there is a high
 clock jitter (roughly 10-15%) because the clock is implemented by delay
 loops. This is not a problem for the I2C bus, though. However, the
 throughput might be lower than one would expect from the numbers in
@@ -260,7 +257,7 @@ you can type:
 
     [ 0xAE 0 0 [ 0xAF r:5 ]
 
-This will address the I2C device under the (8-bit) address in write
+This will address the I2C device under the (8-bit) address 0xAE in write
 mode, set the reading register to 0, then opens the same device again
 in read mode and read 5 registers. A complete documentation of this
 program can be found in the
@@ -270,12 +267,11 @@ program can be found in the
 
 Meanwhile, I have written a wrapper around SoftI2CMaster that emulates
 the [Wire library](http://arduino.cc/en/Reference/Wire) (master mode only). It is another C++-header file called <code>SoftWire.h</code>,
-which you need to include instead of <code>SoftI2CMaster.h</code>. The ports and pins have to be specified as described above. After the include statement you need to create a <code>SoftWire</code> instance:
+which you need to include instead of <code>SoftI2CMaster.h</code>. The ports and pins have to be specified as described above:
 
     #define SDA_PORT ...
     ...
     #include <SoftWire.h>
-    SoftWire Wire = SoftWire();
     ...
     setup() {
         Wire.begin()
@@ -290,9 +286,9 @@ sketches the memory footprint of different I2C libraries.
 There are a few constants that you can define in order to
 control the behavior of the library. You have to specify them before
 the <code>include</code> statement so that they can take effect. Note
-that this different from the usual form of libraries! This library is
+that this is different from the usual form of libraries! This library is
 always compiled with your sketch and therefore the <code>defines</code>
-need to be specfied before the inclusion of the library!
+need to be specified before the inclusion of the library!
 
     #define I2C_RX_BUFFER_LENGTH 48
 The default buffer length is 32 byte like in the standard Arduino Wire or TWI library.
@@ -312,8 +308,7 @@ before including the library, only the declaration part is included.
 In order to measure the memory requirements of the different
 libraries, I wrote a baseline sketch, which contains all necessary I2C
 calls for reading and writing an EEPROM device, and compiled it
-against a library with empty functions. Then all the other libraries
-were used. For the Wire-like libraries, I had to rewrite the sketch,
+against a library with empty functions. This sketch was compared to sketches that imported all the other libraries. For the Wire-like libraries, I had to rewrite the sketch,
 but it has the same functionality. The memory requirements differ
 somewhat from ATmega to ATtiny, but the overall picture is
 similar. The take-home message is: If you are short on memory (flash
