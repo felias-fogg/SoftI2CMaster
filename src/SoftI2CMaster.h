@@ -1,8 +1,8 @@
 /* Arduino SoftI2C library.
  *
- * Version 2.1.8
+ * Version 2.1.9
  *
- * Copyright (C) 2013-2021, Bernhard Nebel and Peter Fleury
+ * Copyright (C) 2013-2025, Bernhard Nebel and Peter Fleury
  *
  * This is a very fast and very light-weight software I2C-master library
  * written in assembler. It is based on Peter Fleury's I2C software
@@ -60,7 +60,10 @@
  */
 
 /* Changelog:
- *  * Version 2.1.8
+ * Version 2.1.9
+ * - ArminJo: added cli-version line in CI
+ * - ArminJo: changed position of guard 
+ * Version 2.1.8
  * - ArminJo: Included MACRO USE_SOFT_I2C_MASTER_H_AS_PLAIN_INCLUDE
  * Version 2.1.7
  * - ArminJo: replaced all calls and jmps by rcalls and rjmps for CPUs not having call and jmp
@@ -96,9 +99,6 @@
 #ifndef __AVR_ARCH__
 #error "Not an AVR MCU! Use 'SlowSoftI2CMaster' library instead of 'SoftI2CMaster'!"
 #else
-
-#ifndef _SOFTI2C_HPP
-#define _SOFTI2C_HPP   1
 
 #include <avr/io.h>
 #include <Arduino.h>
@@ -136,6 +136,8 @@ bool __attribute__ ((noinline)) i2c_write(uint8_t value) asm("ass_i2c_write") __
 uint8_t __attribute__ ((noinline)) i2c_read(bool last) __attribute__ ((used));
 
 #if !defined(USE_SOFT_I2C_MASTER_H_AS_PLAIN_INCLUDE)
+#ifndef _SOFTI2C_HPP
+#define _SOFTI2C_HPP   1
 /*
  * The implementation part of the header only library starts here
  */
