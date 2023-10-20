@@ -9,6 +9,7 @@ name: LibraryBuild
 
 on:
   workflow_dispatch: # To run it manually
+    description: 'manual build check'
   push: # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
     paths:
     - '**.ino'
@@ -73,4 +74,5 @@ jobs:
           platform-url: ${{ matrix.platform-url }}
           sketches-exclude: tinywire,usiwire,slowwire,${{ matrix.sketches-exclude }}
           build-properties: ${{ toJson(matrix.build-properties) }}
+          cli-version: 0.33.0 # to avoid errors for ATTinyCore
 
